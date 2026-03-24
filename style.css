@@ -173,11 +173,21 @@ header h1 {
     min-width: 20px;
 }
 
-button, .nav-item, .btn-allergen-toggle {
+button, .nav-item, .btn-allergen-toggle, .action-card.clickable {
     transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.1s;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes push-heavy {
+    0% { transform: scale(1) translateY(0); }
+    50% { transform: scale(0.92) translateY(4px); }
+    100% { transform: scale(1) translateY(0); }
+}
+
+.clicked-effect {
+    animation: push-heavy 0.15s ease-out !important;
 }
 
 button:active, .nav-item:active, .btn-allergen-toggle:active {

@@ -33,6 +33,14 @@ const btnOpenSettings = document.getElementById('btn-open-settings');
 const bottomNav = document.getElementById('bottom-nav');
 const trackedCountDisplay = document.getElementById('tracked-count');
 
+// Helper for click animation
+function triggerClickEffect(element) {
+    if (!element) return;
+    element.classList.remove('clicked-effect');
+    void element.offsetWidth; // Force reflow
+    element.classList.add('clicked-effect');
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadTasks();
@@ -44,11 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    btnOpenSettings.addEventListener('click', () => {
+    btnOpenSettings.addEventListener('click', (e) => {
+        triggerClickEffect(e.currentTarget);
         switchView('track', true);
     });
     
-    btnFinishManage.addEventListener('click', () => {
+    btnFinishManage.addEventListener('click', (e) => {
+        triggerClickEffect(e.currentTarget);
         switchView('agenda', true);
     });
 
@@ -149,16 +159,19 @@ function renderMasterList() {
             </div>
         `;
         
-        btnContainer.querySelector('.allergen-main-info').onclick = () => {
+        btnContainer.querySelector('.allergen-main-info').onclick = (e) => {
+            triggerClickEffect(btnContainer);
             isTracked ? untrackAllergen(name) : trackAllergen(name);
         };
 
         btnContainer.querySelector('.minus').onclick = (e) => {
             e.stopPropagation();
+            triggerClickEffect(e.currentTarget);
             updateCadence(name, -1);
         };
         btnContainer.querySelector('.plus').onclick = (e) => {
             e.stopPropagation();
+            triggerClickEffect(e.currentTarget);
             updateCadence(name, 1);
         };
 
@@ -307,7 +320,12 @@ function render() {
                 card.classList.add('clickable');
                 card.oncontextmenu = (e) => { e.preventDefault(); return false; };
                 
-                card.onclick = () => { if (!isLongPressActive) markAsDone(task.id); };
+                card.onclick = (e) => { 
+                    if (!isLongPressActive) {
+                        triggerClickEffect(card);
+                        markAsDone(task.id); 
+                    }
+                };
                 card.onmousedown = () => handleInteractionStart(task.id);
                 card.onmouseup = handleInteractionEnd;
                 card.onmouseleave = handleInteractionEnd;
@@ -325,7 +343,7 @@ function render() {
                 statusText = `באיחור של ${Math.abs(diff)} ימים`;
                 statusClass = 'status-overdue';
             } else if (diff === 0) {
-                statusText = ''; // Removed "Today" text as requested
+                statusText = '';
                 statusClass = 'status-due';
             } else if (diff === 1) {
                 statusText = 'מחר';
@@ -338,7 +356,7 @@ function render() {
             card.innerHTML = `
                 <div class="action-info" style="width: 100%;">
                     <h3 style="display:flex; align-items:center; margin:0;">
-                        ${isDoneToday && !isPreview ? `<span class="checkmark" onclick="event.stopPropagation(); undoItem(${task.id})">✅</span>` : ''}
+                        ${isDoneToday && !isPreview ? `<span class="checkmark" onclick="event.stopPropagation(); triggerClickEffect(this); undoItem(${task.id})">✅</span>` : ''}
                         <span style="margin-right: ${isDoneToday && !isPreview ? '8px' : '0'}">${task.name} ${getEmoji(task.name)}</span>
                     </h3>
                     ${statusText ? `<p class="${statusClass}" style="margin:0; font-size: 0.9rem;">${statusText}</p>` : ''}
@@ -369,7 +387,6 @@ window.undoItem = function(id) {
         tasks[index] = sessionHistory.get(id);
         sessionHistory.delete(id);
     } else {
-        // Fallback for post-refresh: force due today
         tasks[index].nextDue = new Date().toISOString();
         tasks[index].lastDone = null; 
     }
