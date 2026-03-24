@@ -191,6 +191,16 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     padding-right: 0.5rem;
     border-right: 4px solid var(--primary);
     font-weight: 700;
+    display: flex;
+    align-items: center;
+}
+
+.header-checkmark {
+    color: var(--success);
+    font-size: 1.2rem;
+    margin-left: 8px;
+    cursor: default;
+    user-select: none;
 }
 
 .checkmark {

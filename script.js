@@ -123,7 +123,6 @@ function getEmoji(name) {
 function renderMasterList() {
     masterListContainer.innerHTML = '';
     
-    // Update count in header
     if (trackedCountDisplay) {
         trackedCountDisplay.innerText = `אלרגנים במעקב: ${tasks.length}`;
     }
@@ -176,7 +175,6 @@ function updateCadence(name, delta) {
         task.freqValue = newVal;
         saveTasks();
     } else {
-        // Automatically track if changing number
         trackAllergen(name);
     }
     renderMasterList();
@@ -206,19 +204,19 @@ function untrackAllergen(name) {
     }
 }
 
-// Long-press detection variables
+// Robust Long-Press Detection
 let longPressTimer;
-let isLongPress = false;
+let isLongPressActive = false;
 
-function startLongPress(id) {
-    isLongPress = false;
+function handleInteractionStart(id) {
+    isLongPressActive = false;
     longPressTimer = setTimeout(() => {
-        isLongPress = true;
+        isLongPressActive = true;
         rescheduleToTomorrow(id);
-    }, 600); // 600ms duration
+    }, 600);
 }
 
-function cancelLongPress() {
+function handleInteractionEnd() {
     clearTimeout(longPressTimer);
 }
 
@@ -226,13 +224,10 @@ function rescheduleToTomorrow(id) {
     const index = tasks.findIndex(t => t.id === id);
     if (index !== -1) {
         if (confirm(`האם להעביר את "${tasks[index].name}" למחר?`)) {
-            // Save state for undo
             sessionHistory.set(id, { ...tasks[index] });
-            
             const tomorrow = new Date();
             tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
             tasks[index].nextDue = tomorrow.toISOString();
-            
             saveTasks();
             render();
         }
@@ -249,33 +244,26 @@ function render() {
     }
 
     const todayISO = new Date().toISOString();
-    
-    // 1. Stable Sort by Name
     const stableTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name, 'he'));
 
-    // 2. Define Groups
     const groups = [
         { id: 'today', title: 'היום', items: [] },
         { id: 'tomorrow', title: 'מחר', items: [] },
         { id: 'future', title: 'בהמשך', items: [] }
     ];
 
-    // 3. Populate Groups
     stableTasks.forEach(task => {
         const diff = getDaysDifference(task.nextDue);
         const isDoneToday = isSameDay(task.lastDone, todayISO);
 
-        // TODAY section: current state
         if (diff <= 0 || isDoneToday) {
             groups[0].items.push({ task, isPreview: false });
         }
 
-        // FUTURE sections: Always show the *upcoming* dose preview
         let nextOccurrenceDiff;
         if (isDoneToday) {
-            nextOccurrenceDiff = diff; // nextDue is already the next one
+            nextOccurrenceDiff = diff;
         } else {
-            // It's due today or overdue. The NEXT one is today + cadence.
             nextOccurrenceDiff = parseInt(task.freqValue);
         }
 
@@ -286,13 +274,11 @@ function render() {
         }
     });
 
-    // 4. Render Groups
     groups.forEach(group => {
-        // Special Header Check for "Today"
         let headerPrefix = '';
         if (group.id === 'today' && group.items.length > 0) {
             const allDone = group.items.every(item => isSameDay(item.task.lastDone, todayISO));
-            if (allDone) headerPrefix = '<span style="color:var(--success); cursor: default; margin-left: 8px;">✅</span>';
+            if (allDone) headerPrefix = '<span class="header-checkmark">✅</span>';
         }
 
         const title = document.createElement('div');
@@ -319,25 +305,21 @@ function render() {
                 card.style.opacity = '0.7';
             } else if (diff <= 0 && !isDoneToday) {
                 card.classList.add('clickable');
+                card.oncontextmenu = (e) => { e.preventDefault(); return false; };
                 
-                // Card click for marking done
-                card.onclick = () => {
-                    if (!isLongPress) markAsDone(task.id);
-                };
-
-                // Mouse/Touch events for long-press
-                card.onmousedown = () => startLongPress(task.id);
-                card.onmouseup = () => cancelLongPress();
-                card.onmouseleave = () => cancelLongPress();
-                card.ontouchstart = () => startLongPress(task.id);
-                card.ontouchend = () => cancelLongPress();
+                card.onclick = () => { if (!isLongPressActive) markAsDone(task.id); };
+                card.onmousedown = () => handleInteractionStart(task.id);
+                card.onmouseup = handleInteractionEnd;
+                card.onmouseleave = handleInteractionEnd;
+                card.ontouchstart = () => handleInteractionStart(task.id);
+                card.ontouchend = handleInteractionEnd;
+                card.ontouchmove = handleInteractionEnd; // Cancel if scrolling
             }
             
             let statusText = '';
             let statusClass = '';
-            
             if (isDoneToday && !isPreview) {
-                statusText = ''; // Removed text as requested
+                statusText = '';
                 statusClass = 'status-ok';
             } else if (diff < 0) {
                 statusText = `באיחור של ${Math.abs(diff)} ימים`;
@@ -370,27 +352,27 @@ function render() {
 window.markAsDone = function(id) {
     const index = tasks.findIndex(t => t.id === id);
     if (index !== -1) {
-        // Save state for undo
         sessionHistory.set(id, { ...tasks[index] });
-        
         const todayISO = new Date().toISOString();
         tasks[index].lastDone = todayISO;
         tasks[index].nextDue = calculateNextDue(todayISO, tasks[index].freqValue);
-        
         saveTasks();
         render();
     }
 };
 
 window.undoItem = function(id) {
+    const index = tasks.findIndex(t => t.id === id);
+    if (index === -1) return;
+
     if (sessionHistory.has(id)) {
-        const prevState = sessionHistory.get(id);
-        const index = tasks.findIndex(t => t.id === id);
-        if (index !== -1) {
-            tasks[index] = prevState;
-            sessionHistory.delete(id);
-            saveTasks();
-            render();
-        }
+        tasks[index] = sessionHistory.get(id);
+        sessionHistory.delete(id);
+    } else {
+        // Fallback for post-refresh: force due today
+        tasks[index].nextDue = new Date().toISOString();
+        tasks[index].lastDone = null; 
     }
+    saveTasks();
+    render();
 };
