@@ -26,10 +26,12 @@ body {
     padding: 1rem 0.8rem 6rem 0.8rem;
     direction: rtl;
     -webkit-tap-highlight-color: transparent;
+    user-select: none; /* Disable selection globally */
+    -webkit-user-select: none;
 }
 
 /* Disable selection on interactive elements for Android */
-button, .nav-item, .btn-allergen-toggle, .action-card, .checkmark, .checkmark-placeholder {
+button, .nav-item, .btn-allergen-toggle, .action-card, .checkmark, .checkmark-placeholder, .list-container {
     user-select: none;
     -webkit-user-select: none;
 }

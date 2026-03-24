@@ -54,12 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     btnOpenSettings.addEventListener('click', (e) => {
         triggerClickEffect(e.currentTarget);
-        switchView('track', true);
+        setTimeout(() => switchView('track', true), 150);
     });
     
     btnFinishManage.addEventListener('click', (e) => {
         triggerClickEffect(e.currentTarget);
-        switchView('agenda', true);
+        setTimeout(() => switchView('agenda', true), 150);
     });
 
     window.addEventListener('popstate', (event) => {
@@ -163,18 +163,18 @@ function renderMasterList() {
         
         btnContainer.querySelector('.allergen-main-info').onclick = (e) => {
             triggerClickEffect(btnContainer);
-            isTracked ? untrackAllergen(name) : trackAllergen(name);
+            setTimeout(() => isTracked ? untrackAllergen(name) : trackAllergen(name), 150);
         };
 
         btnContainer.querySelector('.minus').onclick = (e) => {
             e.stopPropagation();
             triggerClickEffect(e.currentTarget);
-            updateCadence(name, -1);
+            setTimeout(() => updateCadence(name, -1), 150);
         };
         btnContainer.querySelector('.plus').onclick = (e) => {
             e.stopPropagation();
             triggerClickEffect(e.currentTarget);
-            updateCadence(name, 1);
+            setTimeout(() => updateCadence(name, 1), 150);
         };
 
         masterListContainer.appendChild(btnContainer);
@@ -326,7 +326,7 @@ function render() {
                 card.onclick = (e) => { 
                     if (!isLongPressActive) {
                         triggerClickEffect(card);
-                        markAsDone(task.id); 
+                        setTimeout(() => markAsDone(task.id), 150);
                     }
                 };
                 card.onmousedown = () => handleInteractionStart(task.id);
@@ -357,7 +357,7 @@ function render() {
             }
 
             const checkmarkHtml = isDoneToday && !isPreview 
-                ? `<span class="checkmark" onclick="event.stopPropagation(); triggerClickEffect(this); undoItem(${task.id})">✅</span>` 
+                ? `<span class="checkmark" onclick="event.stopPropagation(); triggerClickEffect(this); setTimeout(() => undoItem(${task.id}), 150)">✅</span>` 
                 : `<div class="checkmark-placeholder"></div>`;
 
             card.innerHTML = `
