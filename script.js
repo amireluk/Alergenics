@@ -110,11 +110,11 @@ function calculateNextDue(lastDoneStr, freqValue) {
 
 function getDaysDifference(isoStr) {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
     const targetDate = new Date(isoStr);
-    targetDate.setHours(0, 0, 0, 0);
+    targetDate.setUTCHours(0, 0, 0, 0);
     const diffTime = targetDate - today;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
 
 function isSameDay(isoStr1, isoStr2) {
@@ -269,14 +269,16 @@ function render() {
         const diff = getDaysDifference(task.nextDue);
         const isDoneToday = isSameDay(task.lastDone, todayISO);
 
+        // TODAY section: current state
         if (diff <= 0 || isDoneToday) {
             groups[0].items.push({ task, isPreview: false });
         }
 
-        let nextOccurrenceDiff;
-        if (isDoneToday) {
-            nextOccurrenceDiff = diff;
-        } else {
+        // FUTURE sections: Always show the *upcoming* dose preview
+        let nextOccurrenceDiff = diff;
+        
+        // If it's due today or overdue, and NOT done, the preview should be projected based on cadence
+        if (diff <= 0 && !isDoneToday) {
             nextOccurrenceDiff = parseInt(task.freqValue);
         }
 
