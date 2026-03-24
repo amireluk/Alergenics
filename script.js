@@ -40,14 +40,13 @@ function playClickSound() {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime); // Soft low frequency
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
+        osc.stop(audioCtx.currentTime + 0.05);
     } catch (e) { /* Audio fails silently */ }
 }
 
@@ -227,48 +226,64 @@ function render() {
 
     const todayISO = new Date().toISOString();
     
-    // Sort tasks primarily by nextDue
-    const sortedTasks = [...tasks].sort((a, b) => new Date(a.nextDue) - new Date(b.nextDue));
+    // 1. Stable Sort by Name (prevents jumping)
+    const stableTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name, 'he'));
 
-    // Groups
+    // 2. Define Groups (Always show Tomorrow and Future)
     const groups = [
-        { title: 'היום ובאיחור', items: [] },
-        { title: 'מחר', items: [] },
-        { title: 'בהמשך', items: [] }
+        { id: 'today', title: 'היום ובאיחור', items: [] },
+        { id: 'tomorrow', title: 'מחר', items: [] },
+        { id: 'future', title: 'בהמשך', items: [] }
     ];
 
-    sortedTasks.forEach(task => {
-        // Special logic: If lastDone is today, it stays in "Today" section regardless of nextDue
-        if (isSameDay(task.lastDone, todayISO)) {
-            groups[0].items.push(task);
-            return;
+    // 3. Populate Groups
+    stableTasks.forEach(task => {
+        const diff = getDaysDifference(task.nextDue);
+        const isDoneToday = isSameDay(task.lastDone, todayISO);
+
+        // TODAY section: items due today OR overdue OR already done today
+        if (diff <= 0 || isDoneToday) {
+            groups[0].items.push({ task, isPreview: false });
         }
 
-        const diff = getDaysDifference(task.nextDue);
-        if (diff <= 0) groups[0].items.push(task);
-        else if (diff === 1) groups[1].items.push(task);
-        else groups[2].items.push(task);
+        // TOMORROW / FUTURE sections: Always show the *next* dose preview
+        const nextDiff = getDaysDifference(task.nextDue);
+        if (nextDiff === 1) {
+            groups[1].items.push({ task, isPreview: true });
+        } else if (nextDiff > 1) {
+            groups[2].items.push({ task, isPreview: true });
+        }
     });
 
+    // 4. Render Groups
     groups.forEach(group => {
-        if (group.items.length === 0) return;
-
         const title = document.createElement('div');
         title.className = 'agenda-section-title';
         title.innerText = group.title;
         pendingList.appendChild(title);
 
-        group.items.forEach(task => {
+        if (group.items.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'empty-msg';
+            empty.style.padding = '0.5rem 0';
+            empty.innerText = 'אין פריטים';
+            pendingList.appendChild(empty);
+            return;
+        }
+
+        group.items.forEach(({ task, isPreview }) => {
             const card = document.createElement('div');
             card.className = 'action-card';
+            if (isPreview) card.style.opacity = '0.7';
             
             const diff = getDaysDifference(task.nextDue);
             const isDoneToday = isSameDay(task.lastDone, todayISO);
+            const canUndo = sessionHistory.has(task.id);
             
             let statusText = '';
             let statusClass = '';
             
-            if (isDoneToday) {
+            if (isDoneToday && !isPreview) {
                 statusText = 'בוצע בהצלחה!';
                 statusClass = 'status-ok';
             } else if (diff < 0) {
@@ -285,21 +300,20 @@ function render() {
                 statusClass = 'status-ok';
             }
 
-            const canUndo = sessionHistory.has(task.id);
-            
             card.innerHTML = `
                 <div class="action-info">
-                    <h3 style="display:flex; align-items:center;">
-                        ${task.name} ${getEmoji(task.name)}
-                        ${isDoneToday ? '<span class="checkmark">✅</span>' : ''}
+                    <h3 style="display:flex; align-items:center; margin:0;">
+                        ${isDoneToday && !isPreview ? '<span class="checkmark">✅</span>' : ''}
+                        <span style="margin-right: 5px;">${task.name} ${getEmoji(task.name)}</span>
                     </h3>
-                    <p class="${statusClass}">${statusText}</p>
+                    <p class="${statusClass}" style="margin:0; font-size: 0.9rem;">${statusText}</p>
                 </div>
                 <div class="action-buttons">
-                    ${isDoneToday || canUndo ? 
+                    ${!isPreview ? (
+                        isDoneToday || canUndo ? 
                         `<button class="btn-undo-item" onclick="undoItem(${task.id})">בטל</button>` : 
                         (diff <= 0 ? `<button class="btn-done" onclick="markAsDone(${task.id})">בוצע</button>` : '')
-                    }
+                    ) : ''}
                 </div>
             `;
             pendingList.appendChild(card);
