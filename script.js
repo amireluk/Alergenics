@@ -327,7 +327,7 @@ function render() {
                 });
                 card.addEventListener('dragend', () => card.classList.remove('dragging'));
 
-                if (!isPreview && !isDoneToday) {
+                if (group.id === 'today' && !isPreview && !isDoneToday) {
                     card.classList.add('clickable');
                     card.onclick = () => {
                         triggerClickEffect(card);
@@ -346,8 +346,8 @@ function render() {
                 } else if (diff === 0) {
                     statusText = '';
                     statusClass = 'status-due';
-                } else if (diff === 1) {
-                    statusText = 'מחר';
+                } else if (group.id === 'tomorrow') {
+                    statusText = ''; // Removed "Tomorrow" text as requested
                     statusClass = 'status-ok';
                 } else {
                     statusText = `בעוד ${diff} ימים`;
