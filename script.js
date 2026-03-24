@@ -101,18 +101,20 @@ function saveTasks() {
     localStorage.setItem('alergenics_tasks_he', JSON.stringify(tasks));
 }
 
+// LOCAL TIME CALCULATIONS
 function calculateNextDue(lastDoneStr, freqValue) {
     const lastDone = new Date(lastDoneStr);
     const nextDue = new Date(lastDone);
-    nextDue.setUTCDate(lastDone.getUTCDate() + parseInt(freqValue));
+    nextDue.setDate(lastDone.getDate() + parseInt(freqValue));
+    nextDue.setHours(0, 0, 0, 0); // Normalize to local midnight
     return nextDue.toISOString();
 }
 
 function getDaysDifference(isoStr) {
     const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
     const targetDate = new Date(isoStr);
-    targetDate.setUTCHours(0, 0, 0, 0);
+    targetDate.setHours(0, 0, 0, 0);
     const diffTime = targetDate - today;
     return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
@@ -121,9 +123,9 @@ function isSameDay(isoStr1, isoStr2) {
     if (!isoStr1 || !isoStr2) return false;
     const d1 = new Date(isoStr1);
     const d2 = new Date(isoStr2);
-    return d1.getUTCFullYear() === d2.getUTCFullYear() &&
-           d1.getUTCMonth() === d2.getUTCMonth() &&
-           d1.getUTCDate() === d2.getUTCDate();
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
 }
 
 function getEmoji(name) {
@@ -194,7 +196,9 @@ function updateCadence(name, delta) {
 }
 
 function trackAllergen(name) {
-    const todayISO = new Date().toISOString();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
     const newTask = {
         id: Date.now(),
         name: name,
@@ -239,7 +243,8 @@ function rescheduleToTomorrow(id) {
         if (confirm(`האם להעביר את "${tasks[index].name}" למחר?`)) {
             sessionHistory.set(id, { ...tasks[index] });
             const tomorrow = new Date();
-            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
             tasks[index].nextDue = tomorrow.toISOString();
             saveTasks();
             render();
@@ -269,15 +274,11 @@ function render() {
         const diff = getDaysDifference(task.nextDue);
         const isDoneToday = isSameDay(task.lastDone, todayISO);
 
-        // TODAY section: current state
         if (diff <= 0 || isDoneToday) {
             groups[0].items.push({ task, isPreview: false });
         }
 
-        // FUTURE sections: Always show the *upcoming* dose preview
         let nextOccurrenceDiff = diff;
-        
-        // If it's due today or overdue, and NOT done, the preview should be projected based on cadence
         if (diff <= 0 && !isDoneToday) {
             nextOccurrenceDiff = parseInt(task.freqValue);
         }
@@ -333,7 +334,7 @@ function render() {
                 card.onmouseleave = handleInteractionEnd;
                 card.ontouchstart = () => handleInteractionStart(task.id);
                 card.ontouchend = handleInteractionEnd;
-                card.ontouchmove = handleInteractionEnd; // Cancel if scrolling
+                card.ontouchmove = handleInteractionEnd;
             }
             
             let statusText = '';
@@ -355,11 +356,15 @@ function render() {
                 statusClass = 'status-ok';
             }
 
+            const checkmarkHtml = isDoneToday && !isPreview 
+                ? `<span class="checkmark" onclick="event.stopPropagation(); triggerClickEffect(this); undoItem(${task.id})">✅</span>` 
+                : `<div class="checkmark-placeholder"></div>`;
+
             card.innerHTML = `
                 <div class="action-info" style="width: 100%;">
                     <h3 style="display:flex; align-items:center; margin:0;">
-                        ${isDoneToday && !isPreview ? `<span class="checkmark" onclick="event.stopPropagation(); triggerClickEffect(this); undoItem(${task.id})">✅</span>` : ''}
-                        <span style="margin-right: ${isDoneToday && !isPreview ? '8px' : '0'}">${task.name} ${getEmoji(task.name)}</span>
+                        ${checkmarkHtml}
+                        <span style="margin-right: 8px;">${task.name} ${getEmoji(task.name)}</span>
                     </h3>
                     ${statusText ? `<p class="${statusClass}" style="margin:0; font-size: 0.9rem;">${statusText}</p>` : ''}
                 </div>
@@ -373,7 +378,8 @@ window.markAsDone = function(id) {
     const index = tasks.findIndex(t => t.id === id);
     if (index !== -1) {
         sessionHistory.set(id, { ...tasks[index] });
-        const todayISO = new Date().toISOString();
+        const today = new Date();
+        const todayISO = today.toISOString();
         tasks[index].lastDone = todayISO;
         tasks[index].nextDue = calculateNextDue(todayISO, tasks[index].freqValue);
         saveTasks();
@@ -389,7 +395,9 @@ window.undoItem = function(id) {
         tasks[index] = sessionHistory.get(id);
         sessionHistory.delete(id);
     } else {
-        tasks[index].nextDue = new Date().toISOString();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        tasks[index].nextDue = today.toISOString();
         tasks[index].lastDone = null; 
     }
     saveTasks();
