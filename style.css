@@ -26,12 +26,11 @@ body {
     padding: 1rem 0.8rem 6rem 0.8rem;
     direction: rtl;
     -webkit-tap-highlight-color: transparent;
-    user-select: none; /* Disable selection globally */
+    user-select: none;
     -webkit-user-select: none;
 }
 
-/* Disable selection on interactive elements for Android */
-button, .nav-item, .btn-allergen-toggle, .action-card, .checkmark, .checkmark-placeholder, .list-container {
+button, .nav-item, .btn-allergen-toggle, .action-card, .checkmark, .checkbox-container, .list-container {
     user-select: none;
     -webkit-user-select: none;
 }
@@ -200,7 +199,7 @@ button, .nav-item, .btn-allergen-toggle, .action-card.clickable {
 
 @keyframes push-heavy {
     0% { transform: scale(1) translateY(0); }
-    30% { transform: scale(0.88) translateY(6px); } /* Heavier dip */
+    30% { transform: scale(0.88) translateY(6px); }
     100% { transform: scale(1) translateY(0); }
 }
 
@@ -222,6 +221,12 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     font-weight: 700;
     display: flex;
     align-items: center;
+    transition: background-color 0.2s;
+}
+
+.agenda-section-title.drag-over {
+    background-color: rgba(74, 144, 226, 0.1);
+    border-radius: 4px;
 }
 
 .header-checkmark {
@@ -231,37 +236,39 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     cursor: default;
 }
 
-/* Checkbox Styles */
-.checkmark, .checkmark-placeholder {
-    font-size: 1.4rem;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 8px; /* Square with rounded corners like a checkbox */
+/* CUSTOM CHECKBOX STYLES */
+.checkbox-container {
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.2s ease;
+    cursor: pointer;
+    background: transparent;
+    position: relative;
 }
 
-.checkmark {
-    cursor: pointer;
-    color: var(--success);
-    border: 2px solid var(--success);
+.checkbox-container.checked {
+    border-color: var(--success);
     background: rgba(40, 167, 69, 0.05);
 }
 
-.checkmark-placeholder {
-    border: 2px solid var(--border);
-    background: transparent;
+.checkbox-container.checked::after {
+    content: '';
+    width: 0.6rem;
+    height: 1rem;
+    border: solid var(--success);
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+    display: block;
 }
 
-.checkmark:hover {
-    background: rgba(40, 167, 69, 0.1);
-}
-
-.checkmark:active {
-    transform: scale(0.8);
+.checkbox-container:active {
+    transform: scale(0.85);
 }
 
 /* Agenda List */
@@ -272,15 +279,21 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     padding: 1.2rem;
     background: #ffffff;
     border: 1px solid var(--border);
+    border-right: 6px solid var(--warning); /* Always persistent */
     border-radius: 12px;
     margin-bottom: 0.8rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     transition: all 0.2s ease;
+    cursor: grab;
 }
 
-.action-card.clickable {
-    cursor: pointer;
-    border-right: 6px solid var(--warning);
+.action-card:active {
+    cursor: grabbing;
+}
+
+.action-card.dragging {
+    opacity: 0.4;
+    transform: scale(0.95);
 }
 
 .action-card.clickable:hover {
@@ -290,7 +303,6 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
 .action-card.clickable:active {
     transform: scale(0.94) translateY(4px);
     background-color: #f0f0f0;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .action-info h3 {

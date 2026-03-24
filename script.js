@@ -1,6 +1,6 @@
 // State Management
 let tasks = [];
-let sessionHistory = new Map(); // Robust per-item undo storage
+let sessionHistory = new Map();
 
 // Master Allergen List (Hebrew - MoH Israel)
 const mohAllergens = [
@@ -46,8 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTasks();
     setupEventListeners();
     render();
-    
-    // Initial state for History API
     window.history.replaceState({ view: 'agenda' }, '');
 });
 
@@ -72,10 +70,7 @@ function setupEventListeners() {
 }
 
 function switchView(target, pushToHistory) {
-    if (pushToHistory) {
-        window.history.pushState({ view: target }, '');
-    }
-
+    if (pushToHistory) window.history.pushState({ view: target }, '');
     if (target === 'track') {
         viewAgenda.classList.add('hidden');
         viewTrack.classList.remove('hidden');
@@ -101,12 +96,11 @@ function saveTasks() {
     localStorage.setItem('alergenics_tasks_he', JSON.stringify(tasks));
 }
 
-// LOCAL TIME CALCULATIONS
 function calculateNextDue(lastDoneStr, freqValue) {
     const lastDone = new Date(lastDoneStr);
     const nextDue = new Date(lastDone);
     nextDue.setDate(lastDone.getDate() + parseInt(freqValue));
-    nextDue.setHours(0, 0, 0, 0); // Normalize to local midnight
+    nextDue.setHours(0, 0, 0, 0);
     return nextDue.toISOString();
 }
 
@@ -134,10 +128,7 @@ function getEmoji(name) {
 
 function renderMasterList() {
     masterListContainer.innerHTML = '';
-    
-    if (trackedCountDisplay) {
-        trackedCountDisplay.innerText = `אלרגנים במעקב: ${tasks.length}`;
-    }
+    if (trackedCountDisplay) trackedCountDisplay.innerText = `אלרגנים במעקב: ${tasks.length}`;
 
     mohAllergens.forEach(name => {
         const isTracked = tasks.some(t => t.name === name);
@@ -161,7 +152,7 @@ function renderMasterList() {
             </div>
         `;
         
-        btnContainer.querySelector('.allergen-main-info').onclick = (e) => {
+        btnContainer.querySelector('.allergen-main-info').onclick = () => {
             triggerClickEffect(btnContainer);
             setTimeout(() => isTracked ? untrackAllergen(name) : trackAllergen(name), 150);
         };
@@ -184,7 +175,6 @@ function renderMasterList() {
 function updateCadence(name, delta) {
     const newVal = Math.max(1, (itemCadences[name] || 3) + delta);
     itemCadences[name] = newVal;
-    
     const task = tasks.find(t => t.name === name);
     if (task) {
         task.freqValue = newVal;
@@ -198,14 +188,13 @@ function updateCadence(name, delta) {
 function trackAllergen(name) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayISO = today.toISOString();
     const newTask = {
         id: Date.now(),
         name: name,
         freqValue: itemCadences[name] || 3,
         freqUnit: 'days',
         lastDone: null,
-        nextDue: todayISO 
+        nextDue: today.toISOString() 
     };
     tasks.push(newTask);
     saveTasks();
@@ -221,56 +210,8 @@ function untrackAllergen(name) {
     }
 }
 
-// Robust Long-Press Detection
-let longPressTimer;
-let isLongPressActive = false;
-
-function handleInteractionStart(id, currentDiff) {
-    isLongPressActive = false;
-    longPressTimer = setTimeout(() => {
-        isLongPressActive = true;
-        // If it's today/overdue -> move to tomorrow
-        // If it's tomorrow/future -> move to today
-        if (currentDiff <= 0) {
-            rescheduleToTomorrow(id);
-        } else {
-            rescheduleToToday(id);
-        }
-    }, 600);
-}
-
-function handleInteractionEnd() {
-    clearTimeout(longPressTimer);
-}
-
-function rescheduleToTomorrow(id) {
-    const index = tasks.findIndex(t => t.id === id);
-    if (index !== -1) {
-        if (confirm(`האם להעביר את "${tasks[index].name}" למחר?`)) {
-            sessionHistory.set(id, { ...tasks[index] });
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
-            tasks[index].nextDue = tomorrow.toISOString();
-            saveTasks();
-            render();
-        }
-    }
-}
-
-function rescheduleToToday(id) {
-    const index = tasks.findIndex(t => t.id === id);
-    if (index !== -1) {
-        if (confirm(`האם להקדים את "${tasks[index].name}" להיום?`)) {
-            sessionHistory.set(id, { ...tasks[index] });
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            tasks[index].nextDue = today.toISOString();
-            saveTasks();
-            render();
-        }
-    }
-}
+// Drag and Drop State
+let draggedId = null;
 
 function render() {
     if (!pendingList) return;
@@ -294,33 +235,57 @@ function render() {
         const diff = getDaysDifference(task.nextDue);
         const isDoneToday = isSameDay(task.lastDone, todayISO);
 
+        // 1. TODAY section
         if (diff <= 0 || isDoneToday) {
             groups[0].items.push({ task, isPreview: false });
         }
 
-        let nextOccurrenceDiff = diff;
-        if (diff <= 0 && !isDoneToday) {
-            nextOccurrenceDiff = parseInt(task.freqValue);
+        // 2. TOMORROW section
+        if (diff === 1) {
+            groups[1].items.push({ task, isPreview: false });
         }
 
-        if (nextOccurrenceDiff === 1) {
-            groups[1].items.push({ task, isPreview: true, customDiff: 1 });
-        } else if (nextOccurrenceDiff > 1) {
-            groups[2].items.push({ task, isPreview: true, customDiff: nextOccurrenceDiff });
+        // 3. LATER section (Full master schedule)
+        // Project the NEXT occurrence beyond today/tomorrow state
+        let nextOccurrenceDiff = diff;
+        if (diff <= 0 && !isDoneToday) {
+            // If due today but not done, next one is cadence
+            nextOccurrenceDiff = parseInt(task.freqValue);
+        } else if (diff === 1) {
+            // If due tomorrow, next one is 1 + cadence
+            nextOccurrenceDiff = 1 + parseInt(task.freqValue);
         }
+        
+        // Show in "Later" regardless of status
+        groups[2].items.push({ task, isPreview: true, customDiff: nextOccurrenceDiff });
     });
 
     groups.forEach(group => {
         let headerPrefix = '';
-        if (group.id === 'today' && group.items.length > 0) {
-            const allDone = group.items.every(item => isSameDay(item.task.lastDone, todayISO));
+        if (group.id === 'today' && groups[0].items.length > 0) {
+            const allDone = groups[0].items.every(item => isSameDay(item.task.lastDone, todayISO));
             if (allDone) headerPrefix = '<span class="header-checkmark">✅</span>';
         }
 
-        const title = document.createElement('div');
-        title.className = 'agenda-section-title';
-        title.innerHTML = `${headerPrefix}${group.title}`;
-        pendingList.appendChild(title);
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'agenda-section-title';
+        titleDiv.innerHTML = `${headerPrefix}${group.title}`;
+        
+        // Drop Target Logic
+        if (group.id !== 'future') {
+            titleDiv.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                titleDiv.classList.add('drag-over');
+            });
+            titleDiv.addEventListener('dragleave', () => titleDiv.classList.remove('drag-over'));
+            titleDiv.addEventListener('drop', (e) => {
+                e.preventDefault();
+                titleDiv.classList.remove('drag-over');
+                handleDrop(draggedId, group.id);
+            });
+        }
+
+        pendingList.appendChild(titleDiv);
 
         if (group.items.length === 0) {
             const empty = document.createElement('p');
@@ -331,30 +296,32 @@ function render() {
             return;
         }
 
+        // Sort items in "Later" by their projected date
+        if (group.id === 'future') {
+            group.items.sort((a, b) => a.customDiff - b.customDiff);
+        }
+
         group.items.forEach(({ task, isPreview, customDiff }) => {
             const card = document.createElement('div');
             const diff = isPreview ? customDiff : getDaysDifference(task.nextDue);
             const isDoneToday = isSameDay(task.lastDone, todayISO);
 
             card.className = 'action-card';
+            card.draggable = true;
             
-            // Interaction setup for ALL tracked items (even previews)
-            if (!isDoneToday) {
+            // Drag Handlers
+            card.addEventListener('dragstart', () => {
+                draggedId = task.id;
+                card.classList.add('dragging');
+            });
+            card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+            if (!isPreview && !isDoneToday) {
                 card.classList.add('clickable');
-                card.oncontextmenu = (e) => { e.preventDefault(); return false; };
-                
-                card.onclick = (e) => { 
-                    if (!isLongPressActive && !isPreview) {
-                        triggerClickEffect(card);
-                        setTimeout(() => markAsDone(task.id), 150);
-                    }
+                card.onclick = () => {
+                    triggerClickEffect(card);
+                    setTimeout(() => markAsDone(task.id), 150);
                 };
-                card.onmousedown = () => handleInteractionStart(task.id, diff);
-                card.onmouseup = handleInteractionEnd;
-                card.onmouseleave = handleInteractionEnd;
-                card.ontouchstart = () => handleInteractionStart(task.id, diff);
-                card.ontouchend = handleInteractionEnd;
-                card.ontouchmove = handleInteractionEnd;
             }
             
             let statusText = '';
@@ -376,17 +343,23 @@ function render() {
                 statusClass = 'status-ok';
             }
 
-            const checkmarkHtml = isDoneToday && !isPreview 
-                ? `<span class="checkmark" onclick="event.stopPropagation(); triggerClickEffect(this); setTimeout(() => undoItem(${task.id}), 150)">✅</span>` 
-                : `<div class="checkmark-placeholder"></div>`;
+            // Checkbox logic (ONLY for Today)
+            let checkboxHtml = '';
+            if (group.id === 'today') {
+                const isChecked = isDoneToday;
+                checkboxHtml = `
+                    <div class="checkbox-container ${isChecked ? 'checked' : ''}" 
+                         onclick="event.stopPropagation(); triggerClickEffect(this); setTimeout(() => ${isChecked ? `undoItem(${task.id})` : `markAsDone(${task.id})`}, 150)">
+                    </div>`;
+            }
 
             card.innerHTML = `
                 <div class="action-info" style="width: 100%;">
                     <h3 style="display:flex; align-items:center; margin:0;">
-                        ${checkmarkHtml}
-                        <span style="margin-right: 8px;">${task.name} ${getEmoji(task.name)}</span>
+                        ${checkboxHtml}
+                        <span style="margin-right: ${group.id === 'today' ? '12px' : '0'}">${task.name} ${getEmoji(task.name)}</span>
                     </h3>
-                    ${statusText ? `<p class="${statusClass}" style="margin:0; font-size: 0.9rem;">${statusText}</p>` : ''}
+                    ${statusText ? `<p class="${statusClass}" style="margin:0; font-size: 0.9rem; margin-right: ${group.id === 'today' ? '3.2rem' : '0'}">${statusText}</p>` : ''}
                 </div>
             `;
             pendingList.appendChild(card);
@@ -394,14 +367,28 @@ function render() {
     });
 }
 
+function handleDrop(id, targetGroupId) {
+    const index = tasks.findIndex(t => t.id === id);
+    if (index === -1) return;
+
+    sessionHistory.set(id, { ...tasks[index] });
+    const newDate = new Date();
+    if (targetGroupId === 'tomorrow') {
+        newDate.setDate(newDate.getDate() + 1);
+    }
+    newDate.setHours(0, 0, 0, 0);
+    tasks[index].nextDue = newDate.toISOString();
+    saveTasks();
+    render();
+}
+
 window.markAsDone = function(id) {
     const index = tasks.findIndex(t => t.id === id);
     if (index !== -1) {
         sessionHistory.set(id, { ...tasks[index] });
         const today = new Date();
-        const todayISO = today.toISOString();
-        tasks[index].lastDone = todayISO;
-        tasks[index].nextDue = calculateNextDue(todayISO, tasks[index].freqValue);
+        tasks[index].lastDone = today.toISOString();
+        tasks[index].nextDue = calculateNextDue(today.toISOString(), tasks[index].freqValue);
         saveTasks();
         render();
     }
@@ -410,7 +397,6 @@ window.markAsDone = function(id) {
 window.undoItem = function(id) {
     const index = tasks.findIndex(t => t.id === id);
     if (index === -1) return;
-
     if (sessionHistory.has(id)) {
         tasks[index] = sessionHistory.get(id);
         sessionHistory.delete(id);
