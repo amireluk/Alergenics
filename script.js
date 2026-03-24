@@ -142,7 +142,10 @@ function renderMasterList() {
             </div>
             <div class="cadence-ctrl">
                 <button class="btn-qty minus">-</button>
-                <span class="cadence-val">${itemCadences[name]}</span>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span class="cadence-val">${itemCadences[name]}</span>
+                    <span style="font-size: 0.6rem; opacity: 0.8; font-weight: bold; line-height: 1;">ימים</span>
+                </div>
                 <button class="btn-qty plus">+</button>
             </div>
         `;
