@@ -32,24 +32,6 @@ const btnFinishManage = document.getElementById('btn-finish-manage');
 const btnOpenSettings = document.getElementById('btn-open-settings');
 const bottomNav = document.getElementById('bottom-nav');
 
-// Audio Context for click sound
-let audioCtx = null;
-function playClickSound() {
-    try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(400, audioCtx.currentTime); // Soft low frequency
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.05);
-    } catch (e) { /* Audio fails silently */ }
-}
-
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadTasks();
@@ -62,12 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupEventListeners() {
     btnOpenSettings.addEventListener('click', () => {
-        playClickSound();
         switchView('track', true);
     });
     
     btnFinishManage.addEventListener('click', () => {
-        playClickSound();
         switchView('agenda', true);
     });
 
@@ -161,18 +141,15 @@ function renderMasterList() {
         `;
         
         btnContainer.querySelector('.allergen-main-info').onclick = () => {
-            playClickSound();
             isTracked ? untrackAllergen(name) : trackAllergen(name);
         };
 
         btnContainer.querySelector('.minus').onclick = (e) => {
             e.stopPropagation();
-            playClickSound();
             updateCadence(name, -1);
         };
         btnContainer.querySelector('.plus').onclick = (e) => {
             e.stopPropagation();
-            playClickSound();
             updateCadence(name, 1);
         };
 
@@ -231,7 +208,7 @@ function render() {
 
     // 2. Define Groups (Always show Tomorrow and Future)
     const groups = [
-        { id: 'today', title: 'היום ובאיחור', items: [] },
+        { id: 'today', title: 'היום', items: [] },
         { id: 'tomorrow', title: 'מחר', items: [] },
         { id: 'future', title: 'בהמשך', items: [] }
     ];
@@ -273,12 +250,16 @@ function render() {
 
         group.items.forEach(({ task, isPreview }) => {
             const card = document.createElement('div');
-            card.className = 'action-card';
-            if (isPreview) card.style.opacity = '0.7';
-            
             const diff = getDaysDifference(task.nextDue);
             const isDoneToday = isSameDay(task.lastDone, todayISO);
-            const canUndo = sessionHistory.has(task.id);
+
+            card.className = 'action-card';
+            if (isPreview) {
+                card.style.opacity = '0.7';
+            } else if (diff <= 0 && !isDoneToday) {
+                card.classList.add('clickable');
+                card.onclick = () => markAsDone(task.id);
+            }
             
             let statusText = '';
             let statusClass = '';
@@ -301,19 +282,15 @@ function render() {
             }
 
             card.innerHTML = `
-                <div class="action-info">
-                    <h3 style="display:flex; align-items:center; margin:0;">
-                        ${isDoneToday && !isPreview ? '<span class="checkmark">✅</span>' : ''}
-                        <span style="margin-right: 5px;">${task.name} ${getEmoji(task.name)}</span>
+                <div class="action-info" style="width: 100%;">
+                    <h3 style="display:flex; align-items:center; margin:0; justify-content: space-between;">
+                        <span style="display:flex; align-items:center;">
+                            ${isDoneToday && !isPreview ? `<span class="checkmark" onclick="event.stopPropagation(); undoItem(${task.id})">✅</span>` : ''}
+                            <span style="margin-right: ${isDoneToday && !isPreview ? '8px' : '0'}">${task.name} ${getEmoji(task.name)}</span>
+                        </span>
+                        ${!isPreview && diff <= 0 && !isDoneToday ? '<span class="action-prompt">בוצע?</span>' : ''}
                     </h3>
                     <p class="${statusClass}" style="margin:0; font-size: 0.9rem;">${statusText}</p>
-                </div>
-                <div class="action-buttons">
-                    ${!isPreview ? (
-                        isDoneToday || canUndo ? 
-                        `<button class="btn-undo-item" onclick="undoItem(${task.id})">בטל</button>` : 
-                        (diff <= 0 ? `<button class="btn-done" onclick="markAsDone(${task.id})">בוצע</button>` : '')
-                    ) : ''}
                 </div>
             `;
             pendingList.appendChild(card);
@@ -322,7 +299,6 @@ function render() {
 }
 
 window.markAsDone = function(id) {
-    playClickSound();
     const index = tasks.findIndex(t => t.id === id);
     if (index !== -1) {
         // Save state for undo
@@ -338,7 +314,6 @@ window.markAsDone = function(id) {
 };
 
 window.undoItem = function(id) {
-    playClickSound();
     if (sessionHistory.has(id)) {
         const prevState = sessionHistory.get(id);
         const index = tasks.findIndex(t => t.id === id);
