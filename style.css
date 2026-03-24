@@ -49,6 +49,17 @@ header h1 {
     font-size: 0.85rem;
 }
 
+.version-tag {
+    font-size: 0.7rem;
+    background: var(--border);
+    color: var(--text-light);
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-right: 5px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
 .card {
     background: var(--card-bg);
     padding: 1rem;
