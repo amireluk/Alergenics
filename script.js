@@ -335,7 +335,7 @@ function render() {
                     };
                 } else {
                     card.classList.add('non-interactive');
-                    card.onclick = null; // Explicitly no click
+                    card.onclick = null;
                 }
                 
                 let statusText = '';

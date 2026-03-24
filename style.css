@@ -231,7 +231,7 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
 .agenda-section-title {
     font-size: 1.1rem;
     color: var(--text-light);
-    margin: 0.5rem 0 0.8rem 0;
+    margin: 1.5rem 0 0.8rem 0;
     padding-right: 0.5rem;
     border-right: 4px solid var(--primary);
     font-weight: 700;
@@ -265,6 +265,7 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     cursor: pointer;
     background: transparent;
     position: relative;
+    pointer-events: auto !important;
 }
 
 .checkbox-container.checked {
@@ -321,7 +322,6 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
 }
 
 .action-card.non-interactive {
-    pointer-events: none;
     cursor: default;
 }
 
