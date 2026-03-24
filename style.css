@@ -23,13 +23,19 @@ body {
     background-color: var(--bg);
     color: var(--text);
     line-height: 1.5;
-    padding: 1rem 0.8rem 6rem 0.8rem; /* Extra bottom padding for larger nav */
+    padding: 1rem 0.8rem 6rem 0.8rem;
     direction: rtl;
-    -webkit-tap-highlight-color: transparent; /* Remove tap blue highlight on mobile */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Disable selection on interactive elements for Android */
+button, .nav-item, .btn-allergen-toggle, .action-card, .checkmark, .checkmark-placeholder {
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .container {
-    max-width: 500px; /* Narrower container feels more like an app */
+    max-width: 500px;
     margin: 0 auto;
 }
 
@@ -63,7 +69,7 @@ header h1 {
 .card {
     background: var(--card-bg);
     padding: 1rem;
-    border-radius: 16px; /* Rounder corners for modern mobile feel */
+    border-radius: 16px;
     box-shadow: var(--shadow);
     margin-bottom: 1rem;
 }
@@ -88,10 +94,10 @@ header h1 {
     left: 0;
     right: 0;
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px); /* Modern blur effect */
+    backdrop-filter: blur(10px);
     display: flex;
     justify-content: space-around;
-    padding: 0.8rem 0 calc(0.8rem + env(safe-area-inset-bottom)); /* Support for iPhone notch */
+    padding: 0.8rem 0 calc(0.8rem + env(safe-area-inset-bottom));
     border-top: 1px solid var(--border);
     box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
     z-index: 1000;
@@ -105,8 +111,21 @@ header h1 {
     align-items: center;
     color: var(--text-light);
     cursor: pointer;
-    transition: transform 0.1s active;
     width: 50%;
+}
+
+.nav-item.active {
+    color: var(--primary);
+}
+
+.nav-icon {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+}
+
+.nav-label {
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
 /* Allergen Grid */
@@ -128,7 +147,6 @@ header h1 {
     align-items: center;
     gap: 0.5rem;
     transition: all 0.2s;
-    user-select: none;
 }
 
 .btn-allergen-toggle.tracked {
@@ -173,25 +191,23 @@ header h1 {
     min-width: 20px;
 }
 
+/* Click Animation Core */
 button, .nav-item, .btn-allergen-toggle, .action-card.clickable {
     transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.1s;
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
 @keyframes push-heavy {
     0% { transform: scale(1) translateY(0); }
-    50% { transform: scale(0.92) translateY(4px); }
+    30% { transform: scale(0.88) translateY(6px); } /* Heavier dip */
     100% { transform: scale(1) translateY(0); }
 }
 
 .clicked-effect {
-    animation: push-heavy 0.15s ease-out !important;
+    animation: push-heavy 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 button:active, .nav-item:active, .btn-allergen-toggle:active {
-    transform: scale(0.92) translateY(4px);
+    transform: scale(0.9) translateY(4px);
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
@@ -211,15 +227,39 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     font-size: 1.2rem;
     margin-left: 8px;
     cursor: default;
-    user-select: none;
+}
+
+/* Checkbox Styles */
+.checkmark, .checkmark-placeholder {
+    font-size: 1.4rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px; /* Square with rounded corners like a checkbox */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
 }
 
 .checkmark {
+    cursor: pointer;
     color: var(--success);
-    font-size: 1.4rem;
-    margin-left: 0.5rem;
-    display: flex;
-    align-items: center;
+    border: 2px solid var(--success);
+    background: rgba(40, 167, 69, 0.05);
+}
+
+.checkmark-placeholder {
+    border: 2px solid var(--border);
+    background: transparent;
+}
+
+.checkmark:hover {
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.checkmark:active {
+    transform: scale(0.8);
 }
 
 /* Agenda List */
@@ -227,7 +267,7 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.2rem; /* Larger padding for mobile */
+    padding: 1.2rem;
     background: #ffffff;
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -238,7 +278,7 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
 
 .action-card.clickable {
     cursor: pointer;
-    border-right: 6px solid var(--warning); /* Visual cue for interactive card */
+    border-right: 6px solid var(--warning);
 }
 
 .action-card.clickable:hover {
@@ -246,39 +286,9 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
 }
 
 .action-card.clickable:active {
-    transform: scale(0.95) translateY(4px);
+    transform: scale(0.94) translateY(4px);
     background-color: #f0f0f0;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.checkmark, .checkmark-placeholder {
-    font-size: 1.6rem;
-    width: 2.2rem;
-    height: 2.2rem;
-    padding: 0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.checkmark {
-    cursor: pointer;
-    color: var(--success);
-    transition: background 0.2s;
-}
-
-.checkmark-placeholder {
-    visibility: hidden;
-}
-
-.checkmark:hover {
-    background: rgba(40, 167, 69, 0.1);
-}
-
-.checkmark:active {
-    transform: scale(0.9);
 }
 
 .action-info h3 {
@@ -290,7 +300,7 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     background-color: var(--primary);
     color: white;
     border: none;
-    padding: 1rem 2rem; /* Large mobile-friendly button */
+    padding: 1rem 2rem;
     border-radius: 12px;
     cursor: pointer;
     font-size: 1.1rem;
@@ -307,7 +317,6 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
 
 @media (max-width: 480px) {
     .allergen-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns on small phones */
+        grid-template-columns: repeat(2, 1fr);
     }
 }
-
