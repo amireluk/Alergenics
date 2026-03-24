@@ -225,11 +225,17 @@ function untrackAllergen(name) {
 let longPressTimer;
 let isLongPressActive = false;
 
-function handleInteractionStart(id) {
+function handleInteractionStart(id, currentDiff) {
     isLongPressActive = false;
     longPressTimer = setTimeout(() => {
         isLongPressActive = true;
-        rescheduleToTomorrow(id);
+        // If it's today/overdue -> move to tomorrow
+        // If it's tomorrow/future -> move to today
+        if (currentDiff <= 0) {
+            rescheduleToTomorrow(id);
+        } else {
+            rescheduleToToday(id);
+        }
     }, 600);
 }
 
@@ -246,6 +252,20 @@ function rescheduleToTomorrow(id) {
             tomorrow.setDate(tomorrow.getDate() + 1);
             tomorrow.setHours(0, 0, 0, 0);
             tasks[index].nextDue = tomorrow.toISOString();
+            saveTasks();
+            render();
+        }
+    }
+}
+
+function rescheduleToToday(id) {
+    const index = tasks.findIndex(t => t.id === id);
+    if (index !== -1) {
+        if (confirm(`האם להקדים את "${tasks[index].name}" להיום?`)) {
+            sessionHistory.set(id, { ...tasks[index] });
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            tasks[index].nextDue = today.toISOString();
             saveTasks();
             render();
         }
@@ -317,22 +337,22 @@ function render() {
             const isDoneToday = isSameDay(task.lastDone, todayISO);
 
             card.className = 'action-card';
-            if (isPreview) {
-                card.style.opacity = '0.7';
-            } else if (diff <= 0 && !isDoneToday) {
+            
+            // Interaction setup for ALL tracked items (even previews)
+            if (!isDoneToday) {
                 card.classList.add('clickable');
                 card.oncontextmenu = (e) => { e.preventDefault(); return false; };
                 
                 card.onclick = (e) => { 
-                    if (!isLongPressActive) {
+                    if (!isLongPressActive && !isPreview) {
                         triggerClickEffect(card);
                         setTimeout(() => markAsDone(task.id), 150);
                     }
                 };
-                card.onmousedown = () => handleInteractionStart(task.id);
+                card.onmousedown = () => handleInteractionStart(task.id, diff);
                 card.onmouseup = handleInteractionEnd;
                 card.onmouseleave = handleInteractionEnd;
-                card.ontouchstart = () => handleInteractionStart(task.id);
+                card.ontouchstart = () => handleInteractionStart(task.id, diff);
                 card.ontouchend = handleInteractionEnd;
                 card.ontouchmove = handleInteractionEnd;
             }
