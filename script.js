@@ -325,7 +325,7 @@ function render() {
                 statusText = `באיחור של ${Math.abs(diff)} ימים`;
                 statusClass = 'status-overdue';
             } else if (diff === 0) {
-                statusText = 'היום';
+                statusText = ''; // Removed "Today" text as requested
                 statusClass = 'status-due';
             } else if (diff === 1) {
                 statusText = 'מחר';
