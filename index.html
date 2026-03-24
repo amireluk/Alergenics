@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <h1>Alergenics</h1>
-            <p class="subtitle">מעקב אלרגנים יומי <span class="version-tag">v1.2.1</span></p>
+            <p class="subtitle">מעקב אלרגנים יומי <span class="version-tag">v1.2.3</span></p>
         </header>
 
         <main id="main-content">
@@ -24,8 +24,9 @@
 
             <!-- Track Management View -->
             <section id="view-track" class="card hidden">
-                <div class="track-header">
-                    <h2>ניהול מעקב</h2>
+                <div class="track-header" style="flex-direction: column; align-items: center;">
+                    <h2 style="margin-bottom: 0.2rem; border-bottom: none;">ניהול מעקב</h2>
+                    <p id="tracked-count" style="margin: 0 0 1rem 0; color: var(--text-light); font-size: 0.85rem; font-weight: 600;"></p>
                 </div>
                 
                 <div id="master-list-container" class="allergen-grid">
