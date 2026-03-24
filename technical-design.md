@@ -9,38 +9,31 @@
 * Browser `localStorage` for data persistence.
 * Storage Key: `alergenics_tasks_he`.
 
-**Data Model:**
-```json
-{
-  "id": 1711286400000,
-  "name": "חלב",
-  "freqValue": 3,
-  "freqUnit": "days",
-  "lastDone": "2026-03-24T00:00:00.000Z",
-  "nextDue": "2026-03-27T00:00:00.000Z"
-}
-```
+## 1. Architectural Overview
+The app uses a dual-view architecture (Agenda and Settings). Navigation is managed via a single "Settings" button in the main view and an "Accept" button in the Settings view. Native back-button support is implemented via the History API.
 
-**Core Logic:**
-1. **View Routing:** Class-toggling mechanism between Agenda and Track views.
-2. **Date Comparison:** UTC-based handling, normalized to midnight for accurate daily comparisons.
-3. **Statuses:** 
-    - Red: Overdue.
-    - Yellow: Today.
-    - Green: Future.
-4. **Management:** Button grid allowing addition/removal of objects from the Tasks array.
+### Views:
+1.  **מה אוכלים היום? (Agenda):** The main landing page showing three sections:
+    - **Today & Overdue:** Includes items recently marked as done today (with a checkmark).
+    - **Tomorrow:** Items due exactly one day from now.
+    - **Rest of the week:** All other future items.
+2.  **הגדרות (Settings):** Configuration grid for tracking/untracking allergens and setting cadences.
 
-## Future Development: Multi-User Support & Cloud Sync
-To enable multi-device access and data isolation for different users, the following steps are planned:
+## 2. Core Logic & Status Calculation
+- **Date Comparison:** UTC-based handling, normalized to midnight.
+- **Three-Way Split:**
+    - `diff <= 0`: Today/Overdue.
+    - `diff == 1`: Tomorrow.
+    - `diff > 1`: Future.
+- **Accomplishment State:** If an item's `lastDone` is the current day, it remains in the "Today" section with a ✅ icon instead of a "Done" button, providing visual feedback of completion.
 
-### Authentication Layer:
-- Integrate a user management system (e.g., Supabase Auth).
-- Support for Email or Google account login.
+## 3. Interaction & Feedback
+- **Clicky Buttons:** CSS transitions using `transform: translateY(2px)` and `scale(0.98)` on active state.
+- **Audio Feedback:** A subtle, short click sound played via JavaScript on every button interaction.
+- **Robust Undo:** State-level history per item allows independent "Undo" actions for any item modified during the session.
 
-### Cloud Database:
-- Transition from `localStorage` to a managed database (PostgreSQL).
-- Store allergen settings and report history per user.
+## 4. Navigation Logic
+- **History API:** `pushState('settings')` when opening settings. `popstate` event returns to the agenda. This ensures the Android back button works as expected.
 
-### Sync Logic:
-- Offline-First model: local storage with background cloud synchronization.
-- Data merging upon logging in from a new device.
+## 5. Future Development: Multi-User Support & Cloud Sync
+(See previous documentation for backend planning).

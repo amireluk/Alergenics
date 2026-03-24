@@ -98,24 +98,6 @@ header h1 {
     width: 50%;
 }
 
-.nav-item:active {
-    transform: scale(0.95);
-}
-
-.nav-item.active {
-    color: var(--primary);
-}
-
-.nav-icon {
-    font-size: 1.6rem;
-    margin-bottom: 4px;
-}
-
-.nav-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-}
-
 /* Allergen Grid */
 .allergen-grid {
     display: grid;
@@ -127,7 +109,7 @@ header h1 {
 .btn-allergen-toggle {
     background-color: white;
     border: 1px solid var(--border);
-    padding: 1rem 0.5rem; /* Larger padding for better touch */
+    padding: 1rem 0.5rem;
     border-radius: 12px;
     cursor: pointer;
     display: flex;
@@ -148,7 +130,7 @@ header h1 {
 .cadence-ctrl {
     display: flex;
     align-items: center;
-    gap: 0.8rem; /* Larger gap for easier tapping */
+    gap: 0.8rem;
     margin-top: 0.5rem;
     background: rgba(0,0,0,0.05);
     padding: 0.3rem 0.6rem;
@@ -162,7 +144,7 @@ header h1 {
 .btn-qty {
     background: white;
     border: none;
-    width: 28px; /* Larger touch target */
+    width: 28px;
     height: 28px;
     border-radius: 50%;
     display: flex;
@@ -178,6 +160,34 @@ header h1 {
     font-size: 0.9rem;
     font-weight: 800;
     min-width: 20px;
+}
+
+button, .nav-item, .btn-allergen-toggle {
+    transition: transform 0.1s ease, background-color 0.2s;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:active, .nav-item:active, .btn-allergen-toggle:active {
+    transform: scale(0.96) translateY(2px);
+}
+
+.agenda-section-title {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin: 1.5rem 0 0.8rem 0;
+    padding-right: 0.5rem;
+    border-right: 4px solid var(--primary);
+    font-weight: 700;
+}
+
+.checkmark {
+    color: var(--success);
+    font-size: 1.4rem;
+    margin-left: 0.5rem;
+    display: flex;
+    align-items: center;
 }
 
 /* Agenda List */

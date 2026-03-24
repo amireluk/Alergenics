@@ -13,12 +13,12 @@
             <p class="subtitle">מעקב אלרגנים יומי</p>
         </header>
 
-        <main>
+        <main id="main-content">
             <!-- Agenda View -->
             <section id="view-agenda" class="card">
-                <h2>מה בתפריט?</h2>
+                <h2>מה אוכלים היום?</h2>
                 <div id="pending-list" class="list-container">
-                    <p class="empty-msg">אין אלרגנים במעקב. עברו לניהול כדי להתחיל!</p>
+                    <p class="empty-msg">אין אלרגנים במעקב. עברו להגדרות כדי להתחיל!</p>
                 </div>
             </section>
 
@@ -33,20 +33,16 @@
                 </div>
 
                 <div class="manage-footer">
-                    <button id="btn-finish-manage" class="btn-primary">סיום</button>
+                    <button id="btn-finish-manage" class="btn-primary">אישור</button>
                 </div>
             </section>
         </main>
 
         <!-- Bottom Navigation -->
         <nav id="bottom-nav" class="bottom-nav">
-            <button class="nav-item active" data-target="agenda">
-                <span class="nav-icon">📋</span>
-                <span class="nav-label">התפריט</span>
-            </button>
-            <button class="nav-item" data-target="track">
+            <button id="btn-open-settings" class="nav-item">
                 <span class="nav-icon">⚙️</span>
-                <span class="nav-label">ניהול</span>
+                <span class="nav-label">הגדרות</span>
             </button>
         </nav>
     </div>

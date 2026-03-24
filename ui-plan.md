@@ -1,21 +1,22 @@
 # UI Plan - Alergenics
 
-The app consists of two primary views within a single-page structure, managed via a bottom navigation bar.
+The app features a single-page agenda with a dedicated settings layer, simplified for mobile use.
 
-**Whats on the Menu? (Main View)**
-*   **Agenda Items:** Display name + emoji + relative status (today, in X days).
-*   **Sorting:** Urgent items at the top, with a visual divider for "Future" tasks.
-*   **Action Buttons:** "Done" for current/overdue items; "Undo" for items moved during the session.
+**מה אוכלים היום? (Main View)**
+*   **Three Sections:** 
+    1. **היום (Today):** Overdue items and items due today. Completed items stay here with a ✅.
+    2. **מחר (Tomorrow):** Items due exactly tomorrow.
+    3. **בהמשך (Future):** All other future items.
+*   **Item Cards:** Display name + emoji + status.
+*   **Dynamic Buttons:** "Done" for pending items; "Undo" for items completed today.
+*   **Bottom Nav:** A single prominent "Settings" (הגדרות) button.
 
-**Track Management (Configuration View)**
-*   **Header:** Title and Close (X) button.
-*   **Custom Tracker:** Field to track an allergen not in the master list.
-*   **Allergen Grid:** A grid of large buttons representing the MoH list.
-    - Each button shows: Name + Emoji.
-    - Color indicates tracking status (e.g., Blue for tracked).
-    - Cadence controls (+/-) attached to each button to set the frequency.
-*   **Finish Button:** A large button at the bottom to return to the agenda.
+**הגדרות (Settings View)**
+*   **Grid selection:** Buttons to track/untrack allergens.
+*   **Cadence:** Per-item +/- controls.
+*   **Accept Button:** Large "סיום" button at the bottom to save and return.
 
-**Bottom Navigation**
-*   **Menu:** Switch to the Agenda view.
-*   **Manage:** Switch to the Track Management view.
+**Interaction:**
+*   **Click Feedback:** Buttons animate down/up on tap.
+*   **Audio:** Subtle "click" sound on every interaction.
+*   **Back Button:** Android/Browser back button returns to the agenda.
