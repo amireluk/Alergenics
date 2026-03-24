@@ -1,0 +1,272 @@
+:root {
+    --primary: #4a90e2;
+    --primary-hover: #357abd;
+    --bg: #f5f7fa;
+    --card-bg: #ffffff;
+    --text: #333333;
+    --text-light: #666666;
+    --border: #e1e4e8;
+    --success: #28a745;
+    --warning: #f1c40f;
+    --danger: #dc3545;
+    --shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 1rem 0.8rem 6rem 0.8rem; /* Extra bottom padding for larger nav */
+    direction: rtl;
+    -webkit-tap-highlight-color: transparent; /* Remove tap blue highlight on mobile */
+}
+
+.container {
+    max-width: 500px; /* Narrower container feels more like an app */
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 1.2rem;
+}
+
+header h1 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.1rem;
+}
+
+.subtitle {
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 16px; /* Rounder corners for modern mobile feel */
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+}
+
+.card h2 {
+    margin-bottom: 1.2rem;
+    font-size: 1.3rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.8rem;
+    text-align: center;
+    font-weight: 700;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px); /* Modern blur effect */
+    display: flex;
+    justify-content: space-around;
+    padding: 0.8rem 0 calc(0.8rem + env(safe-area-inset-bottom)); /* Support for iPhone notch */
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+    z-index: 1000;
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: transform 0.1s active;
+    width: 50%;
+}
+
+.nav-item:active {
+    transform: scale(0.95);
+}
+
+.nav-item.active {
+    color: var(--primary);
+}
+
+.nav-icon {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+}
+
+.nav-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Allergen Grid */
+.allergen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-allergen-toggle {
+    background-color: white;
+    border: 1px solid var(--border);
+    padding: 1rem 0.5rem; /* Larger padding for better touch */
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.btn-allergen-toggle.tracked {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.2);
+}
+
+.cadence-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem; /* Larger gap for easier tapping */
+    margin-top: 0.5rem;
+    background: rgba(0,0,0,0.05);
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
+}
+
+.tracked .cadence-ctrl {
+    background: rgba(255,255,255,0.2);
+}
+
+.btn-qty {
+    background: white;
+    border: none;
+    width: 28px; /* Larger touch target */
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cadence-val {
+    font-size: 0.9rem;
+    font-weight: 800;
+    min-width: 20px;
+}
+
+/* Agenda List */
+.action-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem; /* Larger padding for mobile */
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.action-info h3 {
+    margin: 0 0 0.2rem 0;
+    font-size: 1.1rem;
+}
+
+.btn-done, .btn-undo-item {
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem; /* Comfortable touch size */
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    min-width: 70px;
+    transition: opacity 0.2s;
+}
+
+.btn-done:active, .btn-undo-item:active {
+    opacity: 0.8;
+}
+
+.btn-done { background-color: var(--success); }
+.btn-undo-item { background-color: var(--text-light); }
+
+.agenda-divider {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 2rem 0;
+    position: relative;
+    text-align: center;
+}
+
+.agenda-divider::after {
+    content: "עתיד";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card-bg);
+    padding: 0 12px;
+    color: var(--text-light);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Footer / Finish Button */
+.manage-footer {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 1rem 2rem; /* Large mobile-friendly button */
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 700;
+    width: 100%;
+}
+
+.empty-msg {
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    padding: 2rem 0;
+}
+
+@media (max-width: 480px) {
+    .allergen-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on small phones */
+    }
+}
+
