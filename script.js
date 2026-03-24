@@ -33,9 +33,16 @@ const btnOpenSettings = document.getElementById('btn-open-settings');
 const bottomNav = document.getElementById('bottom-nav');
 const trackedCountDisplay = document.getElementById('tracked-count');
 
-// Helper for click animation
+// Helper for click animation and cooldown
 function triggerClickEffect(element) {
     if (!element) return;
+    
+    // Disable all pointer events on body for a short duration
+    document.body.classList.add('cooldown');
+    setTimeout(() => {
+        document.body.classList.remove('cooldown');
+    }, 300); // 300ms interaction cooldown
+
     element.classList.remove('clicked-effect');
     void element.offsetWidth; // Force reflow
     element.classList.add('clicked-effect');
