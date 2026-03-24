@@ -320,6 +320,11 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     background-color: #f0f0f0;
 }
 
+.action-card.non-interactive {
+    pointer-events: none;
+    cursor: default;
+}
+
 .action-info h3 {
     margin: 0 0 0.2rem 0;
     font-size: 1.1rem;

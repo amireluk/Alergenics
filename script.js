@@ -333,6 +333,9 @@ function render() {
                         triggerClickEffect(card);
                         setTimeout(() => markAsDone(task.id), 150);
                     };
+                } else {
+                    card.classList.add('non-interactive');
+                    card.onclick = null; // Explicitly no click
                 }
                 
                 let statusText = '';
