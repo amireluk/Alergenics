@@ -36,13 +36,10 @@ const trackedCountDisplay = document.getElementById('tracked-count');
 // Helper for click animation and cooldown
 function triggerClickEffect(element) {
     if (!element) return;
-    
-    // Disable all pointer events on body for a short duration
     document.body.classList.add('cooldown');
     setTimeout(() => {
         document.body.classList.remove('cooldown');
-    }, 300); // 300ms interaction cooldown
-
+    }, 300);
     element.classList.remove('clicked-effect');
     void element.offsetWidth; // Force reflow
     element.classList.add('clicked-effect');
@@ -217,7 +214,6 @@ function untrackAllergen(name) {
     }
 }
 
-// Drag and Drop State
 let draggedId = null;
 
 function render() {
@@ -247,27 +243,38 @@ function render() {
             groups[0].items.push({ task, isPreview: false });
         }
 
-        // 2. TOMORROW section
-        if (diff === 1) {
-            groups[1].items.push({ task, isPreview: false });
-        }
-
-        // 3. LATER section (Full master schedule)
-        // Project the NEXT occurrence beyond today/tomorrow state
+        // Project the NEXT occurrence
         let nextOccurrenceDiff = diff;
         if (diff <= 0 && !isDoneToday) {
-            // If due today but not done, next one is cadence
             nextOccurrenceDiff = parseInt(task.freqValue);
         } else if (diff === 1) {
-            // If due tomorrow, next one is 1 + cadence
-            nextOccurrenceDiff = 1 + parseInt(task.freqValue);
+            // Even if due tomorrow, we want to see it in Tomorrow section AND proyected in Later
+            // but user said "added 1 day cadence... not showing in tomorrow"
+            // If cadence is 1 and it's due today, next occurrence is Tomorrow.
         }
-        
-        // Show in "Later" regardless of status
-        groups[2].items.push({ task, isPreview: true, customDiff: nextOccurrenceDiff });
+
+        // 2. TOMORROW section
+        // Should show if diff is 1 OR if next projection is 1
+        if (diff === 1 || (diff <= 0 && !isDoneToday && parseInt(task.freqValue) === 1)) {
+            // Only add if not already added as a non-preview (prevents duplicate if diff is 1)
+            groups[1].items.push({ task, isPreview: (diff !== 1) });
+        }
+
+        // 3. LATER section
+        let laterProjectedDiff = diff;
+        if (diff <= 0 && !isDoneToday) {
+            laterProjectedDiff = parseInt(task.freqValue);
+        } else if (diff === 1) {
+            laterProjectedDiff = 1 + parseInt(task.freqValue);
+        }
+        groups[2].items.push({ task, isPreview: true, customDiff: laterProjectedDiff });
     });
 
     groups.forEach(group => {
+        const sectionContainer = document.createElement('div');
+        sectionContainer.className = 'agenda-section';
+        
+        // Header
         let headerPrefix = '';
         if (group.id === 'today' && groups[0].items.length > 0) {
             const allDone = groups[0].items.every(item => isSameDay(item.task.lastDone, todayISO));
@@ -277,107 +284,106 @@ function render() {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'agenda-section-title';
         titleDiv.innerHTML = `${headerPrefix}${group.title}`;
-        
-        // Drop Target Logic
+        sectionContainer.appendChild(titleDiv);
+
+        // Drop Target Logic for the entire section
         if (group.id !== 'future') {
-            titleDiv.addEventListener('dragover', (e) => {
+            sectionContainer.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                titleDiv.classList.add('drag-over');
+                sectionContainer.classList.add('drag-over');
             });
-            titleDiv.addEventListener('dragleave', () => titleDiv.classList.remove('drag-over'));
-            titleDiv.addEventListener('drop', (e) => {
+            sectionContainer.addEventListener('dragleave', () => sectionContainer.classList.remove('drag-over'));
+            sectionContainer.addEventListener('drop', (e) => {
                 e.preventDefault();
-                titleDiv.classList.remove('drag-over');
+                sectionContainer.classList.remove('drag-over');
                 handleDrop(draggedId, group.id);
             });
         }
 
-        pendingList.appendChild(titleDiv);
+        const itemsList = document.createElement('div');
+        itemsList.className = 'section-items';
 
         if (group.items.length === 0) {
             const empty = document.createElement('p');
             empty.className = 'empty-msg';
             empty.style.padding = '0.5rem 0';
             empty.innerText = 'אין פריטים';
-            pendingList.appendChild(empty);
-            return;
-        }
+            itemsList.appendChild(empty);
+        } else {
+            if (group.id === 'future') {
+                group.items.sort((a, b) => a.customDiff - b.customDiff);
+            }
 
-        // Sort items in "Later" by their projected date
-        if (group.id === 'future') {
-            group.items.sort((a, b) => a.customDiff - b.customDiff);
-        }
+            group.items.forEach(({ task, isPreview, customDiff }) => {
+                const card = document.createElement('div');
+                const diff = isPreview ? (customDiff || getDaysDifference(task.nextDue)) : getDaysDifference(task.nextDue);
+                const isDoneToday = isSameDay(task.lastDone, todayISO);
 
-        group.items.forEach(({ task, isPreview, customDiff }) => {
-            const card = document.createElement('div');
-            const diff = isPreview ? customDiff : getDaysDifference(task.nextDue);
-            const isDoneToday = isSameDay(task.lastDone, todayISO);
+                card.className = 'action-card';
+                card.draggable = true;
+                card.addEventListener('dragstart', () => {
+                    draggedId = task.id;
+                    card.classList.add('dragging');
+                });
+                card.addEventListener('dragend', () => card.classList.remove('dragging'));
 
-            card.className = 'action-card';
-            card.draggable = true;
-            
-            // Drag Handlers
-            card.addEventListener('dragstart', () => {
-                draggedId = task.id;
-                card.classList.add('dragging');
+                if (!isPreview && !isDoneToday) {
+                    card.classList.add('clickable');
+                    card.onclick = () => {
+                        triggerClickEffect(card);
+                        setTimeout(() => markAsDone(task.id), 150);
+                    };
+                }
+                
+                let statusText = '';
+                let statusClass = '';
+                if (isDoneToday && !isPreview) {
+                    statusText = '';
+                    statusClass = 'status-ok';
+                } else if (diff < 0) {
+                    statusText = `באיחור של ${Math.abs(diff)} ימים`;
+                    statusClass = 'status-overdue';
+                } else if (diff === 0) {
+                    statusText = '';
+                    statusClass = 'status-due';
+                } else if (diff === 1) {
+                    statusText = 'מחר';
+                    statusClass = 'status-ok';
+                } else {
+                    statusText = `בעוד ${diff} ימים`;
+                    statusClass = 'status-ok';
+                }
+
+                let checkboxHtml = '';
+                if (group.id === 'today') {
+                    const isChecked = isDoneToday;
+                    checkboxHtml = `
+                        <div class="checkbox-container ${isChecked ? 'checked' : ''}" 
+                             onclick="event.stopPropagation(); triggerClickEffect(this); setTimeout(() => ${isChecked ? `undoItem(${task.id})` : `markAsDone(${task.id})`}, 150)">
+                        </div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="action-info" style="width: 100%;">
+                        <h3 style="display:flex; align-items:center; margin:0;">
+                            ${checkboxHtml}
+                            <span style="margin-right: ${group.id === 'today' ? '12px' : '0'}">${task.name} ${getEmoji(task.name)}</span>
+                        </h3>
+                        ${statusText ? `<p class="${statusClass}" style="margin:0; font-size: 0.9rem; margin-right: ${group.id === 'today' ? '3.2rem' : '0'}">${statusText}</p>` : ''}
+                    </div>
+                `;
+                itemsList.appendChild(card);
             });
-            card.addEventListener('dragend', () => card.classList.remove('dragging'));
-
-            if (!isPreview && !isDoneToday) {
-                card.classList.add('clickable');
-                card.onclick = () => {
-                    triggerClickEffect(card);
-                    setTimeout(() => markAsDone(task.id), 150);
-                };
-            }
-            
-            let statusText = '';
-            let statusClass = '';
-            if (isDoneToday && !isPreview) {
-                statusText = '';
-                statusClass = 'status-ok';
-            } else if (diff < 0) {
-                statusText = `באיחור של ${Math.abs(diff)} ימים`;
-                statusClass = 'status-overdue';
-            } else if (diff === 0) {
-                statusText = '';
-                statusClass = 'status-due';
-            } else if (diff === 1) {
-                statusText = 'מחר';
-                statusClass = 'status-ok';
-            } else {
-                statusText = `בעוד ${diff} ימים`;
-                statusClass = 'status-ok';
-            }
-
-            // Checkbox logic (ONLY for Today)
-            let checkboxHtml = '';
-            if (group.id === 'today') {
-                const isChecked = isDoneToday;
-                checkboxHtml = `
-                    <div class="checkbox-container ${isChecked ? 'checked' : ''}" 
-                         onclick="event.stopPropagation(); triggerClickEffect(this); setTimeout(() => ${isChecked ? `undoItem(${task.id})` : `markAsDone(${task.id})`}, 150)">
-                    </div>`;
-            }
-
-            card.innerHTML = `
-                <div class="action-info" style="width: 100%;">
-                    <h3 style="display:flex; align-items:center; margin:0;">
-                        ${checkboxHtml}
-                        <span style="margin-right: ${group.id === 'today' ? '12px' : '0'}">${task.name} ${getEmoji(task.name)}</span>
-                    </h3>
-                    ${statusText ? `<p class="${statusClass}" style="margin:0; font-size: 0.9rem; margin-right: ${group.id === 'today' ? '3.2rem' : '0'}">${statusText}</p>` : ''}
-                </div>
-            `;
-            pendingList.appendChild(card);
-        });
+        }
+        
+        sectionContainer.appendChild(itemsList);
+        pendingList.appendChild(sectionContainer);
     });
 }
 
 function handleDrop(id, targetGroupId) {
     const index = tasks.findIndex(t => t.id === id);
     if (index === -1) return;
-
     sessionHistory.set(id, { ...tasks[index] });
     const newDate = new Date();
     if (targetGroupId === 'tomorrow') {
