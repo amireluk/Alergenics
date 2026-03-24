@@ -384,13 +384,22 @@ function render() {
 function handleDrop(id, targetGroupId) {
     const index = tasks.findIndex(t => t.id === id);
     if (index === -1) return;
+
+    // Save state for undo
     sessionHistory.set(id, { ...tasks[index] });
+
     const newDate = new Date();
     if (targetGroupId === 'tomorrow') {
         newDate.setDate(newDate.getDate() + 1);
     }
     newDate.setHours(0, 0, 0, 0);
+
     tasks[index].nextDue = newDate.toISOString();
+
+    // Crucial: Reset done state when moving to a different day
+    // This allows re-marking it as done on the new day.
+    tasks[index].lastDone = null; 
+
     saveTasks();
     render();
 }

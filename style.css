@@ -246,6 +246,11 @@ button:active, .nav-item:active, .btn-allergen-toggle:active {
     cursor: default;
 }
 
+.section-items {
+    min-height: 50px;
+    transition: background-color 0.2s;
+}
+
 /* CUSTOM CHECKBOX STYLES */
 .checkbox-container {
     width: 2.2rem;
