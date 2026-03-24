@@ -1,17 +1,21 @@
-# תוכנית ממשק משתמש - Alergenics
+# UI Plan - Alergenics
 
-האפליקציה כוללת שתי תצוגות מרכזיות במבנה של עמוד יחיד.
+The app consists of two primary views within a single-page structure, managed via a bottom navigation bar.
 
-**מה בתפריט? (תצוגה ראשית)**
-*   **פריטי אג'נדה:** הצגת שם + אימוג'י + סטטוס יחסי (היום, בעוד X ימים).
-*   **מיון:** פריטים דחופים למעלה, עם קו מפריד ל"עתיד".
-*   **באנר ביטול:** הודעה זמנית המאפשרת לבטל את הפעולה האחרונה.
-*   **כפתור FAB (+):** מעביר למסך ניהול המעקב.
+**Whats on the Menu? (Main View)**
+*   **Agenda Items:** Display name + emoji + relative status (today, in X days).
+*   **Sorting:** Urgent items at the top, with a visual divider for "Future" tasks.
+*   **Action Buttons:** "Done" for current/overdue items; "Undo" for items moved during the session.
 
-**ניהול מעקב (תצוגת ניהול)**
-*   **כותרת:** כותרת + כפתור סגירה (X).
-*   **הגדרות תדירות:** קביעת תדירות ברירת המחדל (3 ימים כברירת מחדל).
-*   **מעקב מותאם אישית:** שדה להוספת אלרגן שלא מופיע ברשימה.
-*   **רשת אלרגנים:** רשת של כפתורים גדולים המייצגים את רשימת משרד הבריאות.
-    - כל כפתור מציג: שם + אימוג'י.
-    - צבע הכפתור משתנה אם הוא במעקב או לא.
+**Track Management (Configuration View)**
+*   **Header:** Title and Close (X) button.
+*   **Custom Tracker:** Field to track an allergen not in the master list.
+*   **Allergen Grid:** A grid of large buttons representing the MoH list.
+    - Each button shows: Name + Emoji.
+    - Color indicates tracking status (e.g., Blue for tracked).
+    - Cadence controls (+/-) attached to each button to set the frequency.
+*   **Finish Button:** A large button at the bottom to return to the agenda.
+
+**Bottom Navigation**
+*   **Menu:** Switch to the Agenda view.
+*   **Manage:** Switch to the Track Management view.

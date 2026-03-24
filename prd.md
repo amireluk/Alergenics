@@ -1,15 +1,15 @@
-# PRD (מסמך דרישות מוצר) - Alergenics
+# PRD (Product Requirements Document) - Alergenics
 
-**מטרה:** לספק ממשק פשוט לניהול ומעקב אחר חשיפה או בדיקה שיטתית של אלרגנים, מבוסס על הרשימה של משרד הבריאות והתאמות אישיות.
+**Goal:** Provide a simple interface to manage and track systematic exposure or testing of allergens based on a master list (Israel MoH) and custom entries.
 
-**קונספט ליבה:**
-- האפליקציה פועלת במודל "מעקב/הסרה" מרשימת מאסטר.
-- משתמשים בוחרים אילו אלרגנים לעקוב אחריהם.
-- אלרגנים במעקב מופיעים ב-"מה בתפריט?" עם הסטטוס הנוכחי שלהם.
+**Core Concept:**
+- The app operates on a "Track/Untrack" model from a master list.
+- Users choose which allergens to track.
+- Tracked allergens appear in "Whats on the Menu" with their current status.
 
-**חוקים:**
-* יחידות זמן קשיחות: ימים, שבועות, חודשים.
-* האפליקציה פועלת בדפדפן בלבד (ללא התחברות).
-* הנתונים נשמרים ב-`localStorage`.
-* סטטוסים יחסיים בלבד (היום, בעוד X ימים, באיחור).
-* כפתור "בטל פעולה" מאפשר חזרה למצב קודם באותו סשן.
+**Rules:**
+* Strict time units: days, weeks, months.
+* The app works entirely in the web browser (no login required for now).
+* Data is persisted via `localStorage`.
+* Status is purely relative (today, in X days, overdue).
+* Session-based Undo allows reverting "Done" or "Untrack" actions.

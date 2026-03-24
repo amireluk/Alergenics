@@ -1,17 +1,17 @@
-# מפרט אפליקציה - Alergenics
+# App Spec - Alergenics
 
-**תפקוד ליבה:** ניהול סטטוס מעקב אחר אלרגנים וניטור המועד הבא המתוכנן לחשיפה או בדיקה.
+**Core Function:** Manage the tracking status of allergens and monitor the next scheduled encounter or test.
 
-**ניהול אלרגנים:**
-- משתמשים יכולים להדליק/לכבות מעקב אחר אלרגנים מרשימת משרד הבריאות באמצעות רשת כפתורים.
-- ניתן להוסיף שם מותאם אישית לאלרגן שלא ברשימה.
-- כל אלרגן במעקב משתמש בתדירות שנקבעה (ברירת מחדל: 3 ימים).
+**Allergen Management:**
+- Users can toggle the "Track" status of allergens from the Israel Ministry of Health list via a button grid.
+- Custom allergen names can be added for tracking.
+- Each tracked allergen uses a set cadence (default: 3 days).
 
-**תצוגות:**
-1. **מה בתפריט? (אג'נדה):** עמוד הבית המציג את כל האלרגנים במעקב, ממוינים לפי דחיפות.
-2. **ניהול מעקב:** עמוד נפרד המציג את כל האלרגנים האפשריים לבחירה.
+**Views:**
+1. **Whats on the Menu (Agenda):** The landing page displaying all currently tracked allergens, sorted by urgency.
+2. **Track Management:** A separate page/view showing all available allergens for selection.
 
-**לוגיקת מעקב:**
-- פריטים ב"מעקב" מחשבים את מועד הביצוע הבא (nextDue) יחסית לרגע הנוכחי.
-- סימון פריט כ"בוצע" מאתחל את המועד הבא לפי חוק התדירות.
-- הסרת מעקב מפריט מוחקת אותו מהאג'נדה אך משאירה אותו זמין ברשימת המאסטר.
+**Tracking Logic:**
+- "Tracked" items calculate their `nextDue` relative to the current moment.
+- Marking an item as "Done" resets its `nextDue` based on the frequency rule.
+- "Untracking" an item removes it from the agenda but keeps it available in the master list.

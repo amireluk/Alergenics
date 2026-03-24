@@ -1,15 +1,15 @@
-# תכנון טכני - Alergenics (גרסה בעברית)
+# Technical Design - Alergenics (English Documentation)
 
-**כלים:**
-* HTML5 למבנה העמוד (RTL).
-* CSS3 לממשק מבוסס כרטיסים, רשת כפתורים וסטטוסים בצבעים.
-* JavaScript (ES6+) לניהול מצב (State), חישובי תאריכים ומניפולציה של ה-DOM.
+**Tools:**
+* HTML5 for page structure (RTL for UI).
+* CSS3 for card-based interface, button grids, and color-coded statuses.
+* JavaScript (ES6+) for state management, date arithmetic, and DOM manipulation.
 
-**אחסון נתונים:**
-* `localStorage` של הדפדפן לשמירת נתונים.
-* מפתח אחסון: `alergenics_tasks_he`.
+**Data Storage:**
+* Browser `localStorage` for data persistence.
+* Storage Key: `alergenics_tasks_he`.
 
-**מודל נתונים:**
+**Data Model:**
 ```json
 {
   "id": 1711286400000,
@@ -21,26 +21,26 @@
 }
 ```
 
-**לוגיקת ליבה:**
-1. **ניתוב תצוגות:** מנגנון החלפת מחלקות (classes) בין עמוד האג'נדה לעמוד ניהול המעקב.
-2. **חישובי תאריכים:** כל התאריכים מטופלים ב-UTC ומנורמלים לחצות להשוואה מדויקת ברמת היום.
-3. **סטטוסים:** 
-    - אדום: איחור.
-    - צהוב: היום.
-    - ירוק: עתיד.
-4. **ניהול מעקב:** רשת כפתורים המאפשרת הוספה או הסרה של אובייקטים ממערך ה-Tasks.
+**Core Logic:**
+1. **View Routing:** Class-toggling mechanism between Agenda and Track views.
+2. **Date Comparison:** UTC-based handling, normalized to midnight for accurate daily comparisons.
+3. **Statuses:** 
+    - Red: Overdue.
+    - Yellow: Today.
+    - Green: Future.
+4. **Management:** Button grid allowing addition/removal of objects from the Tasks array.
 
-## פיתוח עתידי: תמיכה בריבוי משתמשים וסנכרון ענן
-כדי לאפשר גישה ממספר מכשירים ושמירה על נתונים עבור משתמשים שונים, מתוכננים הצעדים הבאים:
+## Future Development: Multi-User Support & Cloud Sync
+To enable multi-device access and data isolation for different users, the following steps are planned:
 
-### שכבת הזדהות:
-- שילוב מערכת ניהול משתמשים (כמו Supabase Auth).
-- אפשרות להתחברות באמצעות אימייל או חשבון גוגל.
+### Authentication Layer:
+- Integrate a user management system (e.g., Supabase Auth).
+- Support for Email or Google account login.
 
-### בסיס נתונים בענן:
-- מעבר מ-`localStorage` לבסיס נתונים מנוהל (PostgreSQL).
-- שמירת הגדרות האלרגנים והיסטוריית הדיווחים לכל משתמש בנפרד.
+### Cloud Database:
+- Transition from `localStorage` to a managed database (PostgreSQL).
+- Store allergen settings and report history per user.
 
-### לוגיקת סנכרון:
-- עבודה במודל Offline-First: שמירה מקומית וסנכרון ברקע מול הענן.
-- מיזוג נתונים בעת התחברות ממכשיר חדש.
+### Sync Logic:
+- Offline-First model: local storage with background cloud synchronization.
+- Data merging upon logging in from a new device.

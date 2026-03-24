@@ -1,8 +1,9 @@
-# סיפורי משתמש - Alergenics
+# User Stories - Alergenics
 
-* כמשתמש, אני רוצה לראות רשת של אלרגנים נפוצים כדי שאוכל לבחור בקלות אחרי מה לעקוב.
-* כמשתמש, אני רוצה לסמן אלרגן ב"מעקב" כדי שהוא יתחיל להופיע בתפריט היומי שלי.
-* כמשתמש, אני רוצה להסיר מעקב מאלרגן אם אין לי צורך לנטר אותו יותר.
-* כמשתמש, אני רוצה להוסיף אלרגן מותאם אישית אם הוא לא מופיע ברשימה הנפוצה.
-* כמשתמש, אני רוצה לראות "מה בתפריט" כדי לדעת איזה חשיפות מתוכננות להיום או נמצאות באיחור.
-* כמשתמש, אני רוצה לבטל פעולה של "בוצע" או שינוי מעקב אם לחצתי בטעות.
+* As a user, I want to see a grid of common allergens (MoH) so I can easily select which ones to track.
+* As a user, I want to mark an allergen as "Tracked" so it starts appearing on my daily menu.
+* As a user, I want to "Untrack" an allergen if I no longer need to monitor it.
+* As a user, I want to add a custom allergen if it's not in the common list.
+* As a user, I want to see "Whats on the Menu" to know which exposures are planned for today or are overdue.
+* As a user, I want to change the frequency (cadence) for each allergen individually.
+* As a user, I want to undo a "Done" action or a tracking change if I clicked it by mistake.
