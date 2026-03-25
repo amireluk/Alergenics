@@ -320,6 +320,7 @@ function render() {
                 const isDoneToday = isSameDay(task.lastDone, todayISO);
 
                 card.className = 'action-card';
+                if (diff < 0 && !isDoneToday) card.classList.add('overdue');
                 card.draggable = true;
                 card.addEventListener('dragstart', () => {
                     draggedId = task.id;
