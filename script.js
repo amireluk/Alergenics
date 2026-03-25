@@ -1,6 +1,13 @@
 // State Management
 let tasks = [];
 let sessionHistory = new Map();
+let debugDateOffset = 0;
+
+function getNow() {
+    const d = new Date();
+    d.setDate(d.getDate() + debugDateOffset);
+    return d;
+}
 
 // Master Allergen List (Hebrew - MoH Israel)
 const mohAllergens = [
@@ -33,6 +40,11 @@ const btnOpenSettings = document.getElementById('btn-open-settings');
 const bottomNav = document.getElementById('bottom-nav');
 const trackedCountDisplay = document.getElementById('tracked-count');
 
+// Debug Elements
+const btnDebugMinus = document.getElementById('debug-day-minus');
+const btnDebugPlus = document.getElementById('debug-day-plus');
+const debugDisplay = document.getElementById('debug-offset-display');
+
 // Helper for click animation and cooldown
 function triggerClickEffect(element) {
     if (!element) return;
@@ -64,6 +76,18 @@ function setupEventListeners() {
         setTimeout(() => switchView('agenda', true), 150);
     });
 
+    btnDebugMinus.addEventListener('click', () => {
+        debugDateOffset--;
+        updateDebugUI();
+        render();
+    });
+
+    btnDebugPlus.addEventListener('click', () => {
+        debugDateOffset++;
+        updateDebugUI();
+        render();
+    });
+
     window.addEventListener('popstate', (event) => {
         if (event.state && event.state.view) {
             switchView(event.state.view, false);
@@ -71,6 +95,15 @@ function setupEventListeners() {
             switchView('agenda', false);
         }
     });
+}
+
+function updateDebugUI() {
+    if (debugDateOffset === 0) {
+        debugDisplay.innerText = 'מצב רגיל';
+    } else {
+        const sign = debugDateOffset > 0 ? '+' : '';
+        debugDisplay.innerText = `יום: ${sign}${debugDateOffset}`;
+    }
 }
 
 function switchView(target, pushToHistory) {
@@ -109,7 +142,7 @@ function calculateNextDue(lastDoneStr, freqValue) {
 }
 
 function getDaysDifference(isoStr) {
-    const today = new Date();
+    const today = getNow();
     today.setHours(0, 0, 0, 0);
     const targetDate = new Date(isoStr);
     targetDate.setHours(0, 0, 0, 0);
@@ -190,7 +223,7 @@ function updateCadence(name, delta) {
 }
 
 function trackAllergen(name) {
-    const today = new Date();
+    const today = getNow();
     today.setHours(0, 0, 0, 0);
     const newTask = {
         id: Date.now(),
@@ -225,11 +258,12 @@ function render() {
         return;
     }
 
-    const todayISO = new Date().toISOString();
+    const now = getNow();
+    const todayISO = now.toISOString();
     const stableTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name, 'he'));
 
-    const todayDate = new Date();
-    const tomorrowDate = new Date();
+    const todayDate = new Date(now);
+    const tomorrowDate = new Date(now);
     tomorrowDate.setDate(todayDate.getDate() + 1);
     const fmt = (d) => `${d.getDate()}.${d.getMonth() + 1}`;
 
@@ -392,7 +426,7 @@ function handleDrop(id, targetGroupId) {
     // Save state for undo
     sessionHistory.set(id, { ...tasks[index] });
 
-    const newDate = new Date();
+    const newDate = getNow();
     if (targetGroupId === 'tomorrow') {
         newDate.setDate(newDate.getDate() + 1);
     }
@@ -412,7 +446,7 @@ window.markAsDone = function(id) {
     const index = tasks.findIndex(t => t.id === id);
     if (index !== -1) {
         sessionHistory.set(id, { ...tasks[index] });
-        const today = new Date();
+        const today = getNow();
         tasks[index].lastDone = today.toISOString();
         tasks[index].nextDue = calculateNextDue(today.toISOString(), tasks[index].freqValue);
         saveTasks();
@@ -427,7 +461,7 @@ window.undoItem = function(id) {
         tasks[index] = sessionHistory.get(id);
         sessionHistory.delete(id);
     } else {
-        const today = new Date();
+        const today = getNow();
         today.setHours(0, 0, 0, 0);
         tasks[index].nextDue = today.toISOString();
         tasks[index].lastDone = null; 
