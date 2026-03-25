@@ -1,0 +1,13 @@
+{
+    "name": "Gemini CLI Sandbox",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+    "runArgs": [ "--name=gemini_sandbox" ],
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+    },
+    "postCreateCommand": "npm install -g @google/gemini-cli",
+    "mounts": [
+        "source=${localEnv:USERPROFILE}/.gemini,target=/home/vscode/.gemini,type=bind"
+    ],
+    "remoteUser": "vscode"
+}

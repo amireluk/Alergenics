@@ -1,6 +1,11 @@
 # UI Plan - Alergenics
 
-The app features a single-page agenda with a dedicated settings layer, simplified for mobile use.
+The app features a triple-view structure (Login, Agenda, and Settings), simplified for mobile use.
+
+**כניסה (Login View)**
+*   **Simple Interface:** Google and Email/Password login options.
+*   **Branding:** App logo and Hebrew title (Alergenics).
+*   **Authentication State:** Automatically redirects to Agenda upon successful login.
 
 **מה אוכלים היום? (Main View)**
 *   **Three Sections:** 

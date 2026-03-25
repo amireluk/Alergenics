@@ -9,7 +9,8 @@
 
 **Rules:**
 * Strict time units: days, weeks, months.
-* The app works entirely in the web browser (no login required for now).
-* Data is persisted via `localStorage`.
+* The app works in the web browser with Firebase for cloud synchronization and user authentication.
+* Data is persisted via Firestore (cloud) and optionally `localStorage` for offline support.
 * Status is purely relative (today, in X days, overdue).
 * Session-based Undo allows reverting "Done" or "Untrack" actions.
+* Security is enforced via Firebase Security Rules, App Check (App Attestation), and Domain Whitelisting.

@@ -1,7 +1,7 @@
 // State Management
 let tasks = [];
 let sessionHistory = new Map();
-let debugDateOffset = 0;
+let debugDateOffset = parseInt(localStorage.getItem('alergenics_debug_offset') || '0');
 
 function getNow() {
     const d = new Date();
@@ -40,11 +40,6 @@ const btnOpenSettings = document.getElementById('btn-open-settings');
 const bottomNav = document.getElementById('bottom-nav');
 const trackedCountDisplay = document.getElementById('tracked-count');
 
-// Debug Elements
-const btnDebugMinus = document.getElementById('debug-day-minus');
-const btnDebugPlus = document.getElementById('debug-day-plus');
-const debugDisplay = document.getElementById('debug-offset-display');
-
 // Helper for click animation and cooldown
 function triggerClickEffect(element) {
     if (!element) return;
@@ -61,6 +56,15 @@ function triggerClickEffect(element) {
 document.addEventListener('DOMContentLoaded', () => {
     loadTasks();
     setupEventListeners();
+    
+    // Show debug controls if ?dev is in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('dev')) {
+        const debugControls = document.getElementById('debug-controls');
+        if (debugControls) debugControls.classList.remove('hidden');
+    }
+    
+    updateDebugUI();
     render();
     window.history.replaceState({ view: 'agenda' }, '');
 });
@@ -76,17 +80,26 @@ function setupEventListeners() {
         setTimeout(() => switchView('agenda', true), 150);
     });
 
-    btnDebugMinus.addEventListener('click', () => {
-        debugDateOffset--;
-        updateDebugUI();
-        render();
-    });
+    const btnDebugMinus = document.getElementById('debug-day-minus');
+    const btnDebugPlus = document.getElementById('debug-day-plus');
 
-    btnDebugPlus.addEventListener('click', () => {
-        debugDateOffset++;
-        updateDebugUI();
-        render();
-    });
+    if (btnDebugMinus) {
+        btnDebugMinus.addEventListener('click', () => {
+            debugDateOffset--;
+            localStorage.setItem('alergenics_debug_offset', debugDateOffset);
+            updateDebugUI();
+            render();
+        });
+    }
+
+    if (btnDebugPlus) {
+        btnDebugPlus.addEventListener('click', () => {
+            debugDateOffset++;
+            localStorage.setItem('alergenics_debug_offset', debugDateOffset);
+            updateDebugUI();
+            render();
+        });
+    }
 
     window.addEventListener('popstate', (event) => {
         if (event.state && event.state.view) {
@@ -98,6 +111,9 @@ function setupEventListeners() {
 }
 
 function updateDebugUI() {
+    const debugDisplay = document.getElementById('debug-offset-display');
+    if (!debugDisplay) return;
+    
     if (debugDateOffset === 0) {
         debugDisplay.innerText = 'מצב רגיל';
     } else {
