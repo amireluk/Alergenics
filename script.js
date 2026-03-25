@@ -228,9 +228,14 @@ function render() {
     const todayISO = new Date().toISOString();
     const stableTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name, 'he'));
 
+    const todayDate = new Date();
+    const tomorrowDate = new Date();
+    tomorrowDate.setDate(todayDate.getDate() + 1);
+    const fmt = (d) => `${d.getDate()}.${d.getMonth() + 1}`;
+
     const groups = [
-        { id: 'today', title: 'היום', items: [] },
-        { id: 'tomorrow', title: 'מחר', items: [] },
+        { id: 'today', title: `היום (${fmt(todayDate)})`, items: [] },
+        { id: 'tomorrow', title: `מחר (${fmt(tomorrowDate)})`, items: [] },
         { id: 'future', title: 'בהמשך', items: [] }
     ];
 
@@ -247,16 +252,10 @@ function render() {
         let nextOccurrenceDiff = diff;
         if (diff <= 0 && !isDoneToday) {
             nextOccurrenceDiff = parseInt(task.freqValue);
-        } else if (diff === 1) {
-            // Even if due tomorrow, we want to see it in Tomorrow section AND proyected in Later
-            // but user said "added 1 day cadence... not showing in tomorrow"
-            // If cadence is 1 and it's due today, next occurrence is Tomorrow.
         }
 
         // 2. TOMORROW section
-        // Should show if diff is 1 OR if next projection is 1
         if (diff === 1 || (diff <= 0 && !isDoneToday && parseInt(task.freqValue) === 1)) {
-            // Only add if not already added as a non-preview (prevents duplicate if diff is 1)
             groups[1].items.push({ task, isPreview: (diff !== 1) });
         }
 
@@ -274,12 +273,13 @@ function render() {
         const sectionContainer = document.createElement('div');
         sectionContainer.className = 'agenda-section';
         
-        // Header
-        let headerPrefix = '';
-        if (group.id === 'today' && groups[0].items.length > 0) {
-            const allDone = groups[0].items.every(item => isSameDay(item.task.lastDone, todayISO));
-            if (allDone) headerPrefix = '<span class="header-checkmark">✅</span>';
+        // Header logic
+        let isTodayDone = false;
+        if (group.id === 'today') {
+            isTodayDone = groups[0].items.length > 0 && groups[0].items.every(item => isSameDay(item.task.lastDone, todayISO));
         }
+        
+        const headerPrefix = group.id === 'today' ? `<span class="header-checkmark ${isTodayDone ? 'visible' : ''}">✅</span>` : '';
 
         const titleDiv = document.createElement('div');
         titleDiv.className = 'agenda-section-title';
