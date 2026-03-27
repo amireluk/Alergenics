@@ -149,10 +149,21 @@ function switchView(target, pushToHistory) {
 }
 
 function loadTasks() {
-    const stored = localStorage.getItem('alergenics_tasks_he');
-    if (stored) {
-        tasks = JSON.parse(stored);
-        tasks.forEach(t => { itemCadences[t.name] = t.freqValue; });
+    try {
+        const stored = localStorage.getItem('alergenics_tasks_he');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+                tasks = parsed;
+                tasks.forEach(t => { 
+                    if (t.name) itemCadences[t.name] = t.freqValue || 3; 
+                });
+            }
+        }
+    } catch (e) {
+        console.error("Failed to load tasks, resetting storage:", e);
+        localStorage.removeItem('alergenics_tasks_he');
+        tasks = [];
     }
 }
 
