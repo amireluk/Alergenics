@@ -101,6 +101,16 @@ function setupEventListeners() {
         });
     }
 
+    const btnDebugReset = document.getElementById('debug-reset');
+    if (btnDebugReset) {
+        btnDebugReset.addEventListener('click', () => {
+            if (confirm('האם אתה בטוח שברצונך לאפס את כל הנתונים?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        });
+    }
+
     window.addEventListener('popstate', (event) => {
         if (event.state && event.state.view) {
             switchView(event.state.view, false);
@@ -123,6 +133,7 @@ function updateDebugUI() {
 }
 
 function switchView(target, pushToHistory) {
+    console.log('Switching to view:', target);
     if (pushToHistory) window.history.pushState({ view: target }, '');
     if (target === 'track') {
         viewAgenda.classList.add('hidden');
