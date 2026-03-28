@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alergenics - מעקב אלרגנים</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="debug-controls" class="debug-banner hidden">
+            <button id="debug-day-minus" class="btn-debug">- יום</button>
+            <span id="debug-offset-display">מצב רגיל</span>
+            <button id="debug-day-plus" class="btn-debug">+ יום</button>
+            <button id="debug-reset" class="btn-debug" style="background: var(--danger); color: white; border: none; margin-right: 10px;">איפוס</button>
+        </div>
+        <header>
+            <h1>Alergenics</h1>
+            <p class="subtitle">מעקב אלרגנים יומי <span class="version-tag">v2.1.1</span></p>
+        </header>
+
+        <main id="main-content">
+            <!-- Landing View -->
+            <section id="view-tracker-landing" class="card">
+                <h2>ברוכים הבאים</h2>
+                <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-light);">צרו מעקב חדש או הצטרפו למעקב קיים</p>
+
+                <div id="landing-spinner" class="landing-spinner hidden">⚙️</div>
+
+                <div id="landing-actions" style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                    <button id="btn-create-tracker" class="btn-primary" style="width: 100%; max-width: 300px;">צור מעקב חדש</button>
+
+                    <div style="width: 100%; max-width: 300px; text-align: center; color: var(--text-light); font-size: 0.85rem;">או</div>
+
+                    <button id="btn-show-join" class="btn-primary" style="width: 100%; max-width: 300px;">הצטרף למעקב קיים</button>
+
+                    <div id="join-form" class="hidden" style="width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <input id="input-tracker-id" type="text" placeholder="קוד מעקב (6 תווים)"
+                               style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; text-align: center; direction: ltr; letter-spacing: 4px;" maxlength="6">
+                        <button id="btn-join-tracker" class="btn-primary">הצטרף</button>
+                    </div>
+                </div>
+
+                <div id="tracker-error" class="tracker-error hidden"></div>
+            </section>
+
+
+            <!-- Agenda View -->
+            <section id="view-agenda" class="card hidden">
+                <h2>מה אוכלים היום? <span id="api-indicator">⚙️</span></h2>
+                <div id="pending-list" class="list-container">
+                    <p class="empty-msg">אין אלרגנים במעקב. עברו להגדרות כדי להתחיל</p>
+                </div>
+            </section>
+
+            <!-- Track Management View -->
+            <section id="view-track" class="card hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h2 style="border-bottom: none; margin-bottom: 0; flex: 1;">ניהול מעקב</h2>
+                    <button id="btn-toggle-layout" class="btn-layout-toggle" title="החלף תצוגה">☰</button>
+                </div>
+                <div class="tracker-mgmt-section" style="margin-bottom: 1rem;">
+                    <div class="tracker-mgmt-title">אלרגנים למעקב</div>
+                    <div style="padding: 0.75rem 1rem 0.25rem;">
+                        <div id="master-list-container" class="allergen-rows"></div>
+                    </div>
+                </div>
+
+                <!-- Tracker management section -->
+                <div class="tracker-mgmt-section">
+                    <div class="tracker-mgmt-title">שיתוף מעקב</div>
+                    <div class="tracker-mgmt-row">
+                        <span class="tracker-mgmt-label">קוד מעקב</span>
+                        <strong id="tracker-id-display" class="tracker-id-value"></strong>
+                    </div>
+                    <div class="tracker-mgmt-row">
+                        <span class="tracker-mgmt-label">קישור הצטרפות</span>
+                        <button id="btn-invite" class="btn-mgmt">העתק</button>
+                    </div>
+                    <div id="invite-confirm" class="tracker-mgmt-confirm hidden">הקישור הועתק ללוח</div>
+                    <div class="tracker-mgmt-row tracker-mgmt-row--danger">
+                        <span class="tracker-mgmt-label">נתק מעקב</span>
+                        <button id="btn-leave-tracker" class="btn-mgmt btn-mgmt--danger">נתק</button>
+                    </div>
+                    <div id="leave-warning" class="tracker-mgmt-warning hidden">
+                        לחיצה נוספת תנתק אותך מהמעקב. תצטרך את קוד המעקב כדי להצטרף שוב.
+                    </div>
+                </div>
+
+                <div class="manage-footer">
+                    <button id="btn-finish-manage" class="btn-primary">חזור</button>
+                </div>
+            </section>
+            <p id="app-credit" class="app-credit hidden">Alergenics v2.1.1 · Amir Eluk © 2026</p>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav id="bottom-nav" class="bottom-nav hidden">
+            <button id="btn-open-settings" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">הגדרות</span>
+            </button>
+        </nav>
+    </div>
+    <script src="env.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
