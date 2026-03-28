@@ -227,18 +227,26 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    // Touch press animation — iOS/Android don't fire :active on divs without a touch handler
+    // Touch press animation — iOS/Android fire touchstart+touchend within 1-2ms,
+    // so :active never paints. Hold .pressing for at least 150ms so the scale is visible.
     const PRESS_SELECTOR = 'button, .nav-item, .btn-allergen-toggle, .action-card.clickable';
     document.addEventListener('touchstart', e => {
         const el = e.target.closest(PRESS_SELECTOR);
-        if (el) el.classList.add('pressing');
+        if (!el) return;
+        el.classList.add('pressing');
+        el._pressTimer = setTimeout(() => el.classList.remove('pressing'), 150);
     }, { passive: true });
     const clearPress = e => {
         const el = e.target.closest(PRESS_SELECTOR);
-        if (el) el.classList.remove('pressing');
+        if (!el) return;
+        clearTimeout(el._pressTimer);
+        setTimeout(() => el.classList.remove('pressing'), 150);
     };
     document.addEventListener('touchend', clearPress, { passive: true });
-    document.addEventListener('touchcancel', clearPress, { passive: true });
+    document.addEventListener('touchcancel', e => {
+        const el = e.target.closest(PRESS_SELECTOR);
+        if (el) { clearTimeout(el._pressTimer); el.classList.remove('pressing'); }
+    }, { passive: true });
 
     document.getElementById('btn-create-tracker').addEventListener('click', createTracker);
     document.getElementById('btn-local-mode').addEventListener('click', enterLocalMode);
