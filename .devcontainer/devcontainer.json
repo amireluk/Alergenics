@@ -1,11 +1,12 @@
 {
-    "name": "Gemini CLI Sandbox",
+    "name": "Alergenics Dev",
     "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
-    "runArgs": [ "--name=gemini_sandbox" ],
+    "runArgs": [ "--name=alergenics_dev" ],
     "features": {
-        "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+        "ghcr.io/devcontainers/features/node:1": { "version": "22" },
+        "ghcr.io/devcontainers/features/azure-cli:1": {}
     },
-    "postCreateCommand": "npm install -g @google/gemini-cli",
+    "postCreateCommand": "npm install -g @anthropic-ai/claude-code && cd /workspaces/Alergenics && npm install && npx playwright install chromium && npx playwright install-deps chromium",
     "mounts": [
         "source=${localEnv:USERPROFILE}/.gemini,target=/home/vscode/.gemini,type=bind"
     ],

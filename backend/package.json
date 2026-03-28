@@ -1,0 +1,16 @@
+{
+  "name": "alergenics-api",
+  "version": "1.0.0",
+  "description": "Alergenics shared trackers API — Azure Functions + Cosmos DB",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start",
+    "deploy": "func azure functionapp publish"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.0.0",
+    "@azure/functions": "^4.0.0",
+    "@azure/identity": "^4.0.0",
+    "nanoid": "^3.3.7"
+  }
+}

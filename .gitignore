@@ -1,7 +1,13 @@
 node_modules/
-.env
+test-results/
+playwright-report/
 .firebase/
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Secrets — NEVER commit these
+.env
+backend/local.settings.json
+frontend/env.js
 firebase-config.js
