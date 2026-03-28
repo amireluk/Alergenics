@@ -6,6 +6,13 @@
 
 Users track allergens from the Israel Ministry of Health list (plus custom entries), and the app surfaces which exposures are due today, tomorrow, or in the future. Trackers can be shared between users via a tracker ID — no login required.
 
+## Ground Rules
+
+- **Never `git push` without explicit user approval for that specific push.**
+- **Never deploy to Azure Functions (`func azure functionapp publish`) without explicit user approval.**
+- Always show what will be pushed/deployed and wait for a clear "go ahead" before executing.
+- **Every push must include at least a hotfix version bump** (e.g. v2.1.1 → v2.1.2) in `index.html` (version-tag span) and the copyright line, and `package.json`.
+
 ## Open TODOs
 
 - **CORS is set to `*` (wildcard) — must be locked down before going live.** Replace with the actual frontend hosting domain in Azure Portal → alergenics-api → API → CORS, or via: `az functionapp cors add --name alergenics-api --resource-group alergenics-rg --allowed-origins "https://your-domain.com"`
