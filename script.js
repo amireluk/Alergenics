@@ -1,6 +1,7 @@
 // --- API Layer ---
 const API_URL = (typeof ENV !== 'undefined' && ENV.API_URL) || 'https://alergenics-api-dubnd2d7d2ahfwfy.israelcentral-01.azurewebsites.net';
 let currentTrackerId = localStorage.getItem('alergenics_tracker_id') || null;
+let localMode = localStorage.getItem('alergenics_local_mode') === 'true';
 
 let apiCallCount = 0;
 function apiStart() {
@@ -140,10 +141,30 @@ async function joinTracker() {
 function leaveTracker() {
     stopPolling();
     currentTrackerId = null;
+    localMode = false;
     localStorage.removeItem('alergenics_tracker_id');
+    localStorage.removeItem('alergenics_local_mode');
+    localStorage.removeItem('alergenics_local_tasks');
     tasks = [];
     itemCadences = {};
     showLanding();
+}
+
+function enterLocalMode() {
+    localMode = true;
+    localStorage.setItem('alergenics_local_mode', 'true');
+    const saved = localStorage.getItem('alergenics_local_tasks');
+    tasks = saved ? JSON.parse(saved) : [];
+    tasks.forEach(t => { if (t.name) itemCadences[t.name] = t.freqValue || 3; });
+    viewTrackerLanding.classList.add('hidden');
+    switchView('agenda', false);
+    window.history.replaceState({ view: 'agenda' }, '');
+}
+
+function updateSharingSectionForMode() {
+    document.getElementById('sharing-title').textContent = localMode ? 'מצב מקומי' : 'שיתוף מעקב';
+    document.getElementById('sharing-rows').classList.toggle('hidden', localMode);
+    document.getElementById('local-mode-row').classList.toggle('hidden', !localMode);
 }
 
 function showLanding() {
@@ -198,13 +219,29 @@ document.addEventListener('DOMContentLoaded', () => {
         joinTracker();
     } else if (currentTrackerId) {
         enterTracker();
+    } else if (localMode) {
+        enterLocalMode();
     } else {
         showLanding();
     }
 });
 
 function setupEventListeners() {
+    // Touch press animation — iOS/Android don't fire :active on divs without a touch handler
+    const PRESS_SELECTOR = 'button, .nav-item, .btn-allergen-toggle, .action-card.clickable';
+    document.addEventListener('touchstart', e => {
+        const el = e.target.closest(PRESS_SELECTOR);
+        if (el) el.classList.add('pressing');
+    }, { passive: true });
+    const clearPress = e => {
+        const el = e.target.closest(PRESS_SELECTOR);
+        if (el) el.classList.remove('pressing');
+    };
+    document.addEventListener('touchend', clearPress, { passive: true });
+    document.addEventListener('touchcancel', clearPress, { passive: true });
+
     document.getElementById('btn-create-tracker').addEventListener('click', createTracker);
+    document.getElementById('btn-local-mode').addEventListener('click', enterLocalMode);
 
     // "הצטרף למעקב קיים" reveals the input form
     document.getElementById('btn-show-join').addEventListener('click', () => {
@@ -222,8 +259,11 @@ function setupEventListeners() {
         if (!leaveConfirmPending) {
             // First click — arm: show warning, turn red, shake, disable for 1s
             leaveConfirmPending = true;
+            warning.textContent = localMode
+                ? 'לחיצה נוספת תמחק את כל הנתונים ותחזיר אותך למסך הפתיחה.'
+                : 'לחיצה נוספת תנתק אותך מהמעקב. תצטרך את קוד המעקב כדי להצטרף שוב.';
             warning.classList.remove('hidden');
-            btn.classList.remove('armed'); // reset to re-trigger animation
+            btn.classList.remove('armed');
             void btn.offsetWidth;
             btn.classList.add('armed');
             btn.disabled = true;
@@ -313,7 +353,7 @@ let pollTimer = null;
 
 function startPolling() {
     stopPolling();
-    if (!currentTrackerId) return;
+    if (!currentTrackerId || localMode) return;
     pollTimer = setInterval(syncFromServer, 30000);
 }
 
@@ -359,7 +399,9 @@ function switchView(target, pushToHistory) {
         viewTrack.classList.remove('hidden');
         bottomNav.classList.add('hidden');
         credit?.classList.remove('hidden');
+        updateSharingSectionForMode();
         renderMasterList();
+        window.scrollTo({ top: 0, behavior: 'instant' });
     } else {
         viewTrack.classList.add('hidden');
         viewAgenda.classList.remove('hidden');
@@ -369,8 +411,12 @@ function switchView(target, pushToHistory) {
     }
 }
 
-// --- Persistence: always save to API ---
+// --- Persistence ---
 async function saveTasks() {
+    if (localMode) {
+        localStorage.setItem('alergenics_local_tasks', JSON.stringify(tasks));
+        return;
+    }
     if (!currentTrackerId) return;
     try {
         await apiSaveTracker(currentTrackerId, tasks);

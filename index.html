@@ -16,7 +16,7 @@
         </div>
         <header>
             <h1>Alergenics</h1>
-            <p class="subtitle">מעקב אלרגנים יומי <span class="version-tag">v2.1.1</span></p>
+            <p class="subtitle">מעקב אלרגנים יומי <span class="version-tag">v2.1.2</span></p>
         </header>
 
         <main id="main-content">
@@ -28,16 +28,28 @@
                 <div id="landing-spinner" class="landing-spinner hidden">⚙️</div>
 
                 <div id="landing-actions" style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
-                    <button id="btn-create-tracker" class="btn-primary" style="width: 100%; max-width: 300px;">צור מעקב חדש</button>
+                    <div style="width: 100%; max-width: 300px;">
+                        <button id="btn-create-tracker" class="btn-primary" style="width: 100%;">צור מעקב חדש</button>
+                        <p class="landing-option-desc">שתף עם בני המשפחה בעזרת קוד מעקב</p>
+                    </div>
 
                     <div style="width: 100%; max-width: 300px; text-align: center; color: var(--text-light); font-size: 0.85rem;">או</div>
 
-                    <button id="btn-show-join" class="btn-primary" style="width: 100%; max-width: 300px;">הצטרף למעקב קיים</button>
+                    <div style="width: 100%; max-width: 300px;">
+                        <button id="btn-show-join" class="btn-primary" style="width: 100%;">הצטרף למעקב קיים</button>
+                        <p class="landing-option-desc">הזן קוד שקיבלת מאחר</p>
+                        <div id="join-form" class="hidden" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                            <input id="input-tracker-id" type="text" placeholder="קוד מעקב (6 תווים)"
+                                   style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; text-align: center; direction: ltr; letter-spacing: 4px;" maxlength="6">
+                            <button id="btn-join-tracker" class="btn-primary">הצטרף</button>
+                        </div>
+                    </div>
 
-                    <div id="join-form" class="hidden" style="width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <input id="input-tracker-id" type="text" placeholder="קוד מעקב (6 תווים)"
-                               style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; text-align: center; direction: ltr; letter-spacing: 4px;" maxlength="6">
-                        <button id="btn-join-tracker" class="btn-primary">הצטרף</button>
+                    <div style="width: 100%; max-width: 300px; text-align: center; color: var(--text-light); font-size: 0.85rem;">או</div>
+
+                    <div style="width: 100%; max-width: 300px;">
+                        <button id="btn-local-mode" class="btn-primary" style="width: 100%;">עבוד מקומית</button>
+                        <p class="landing-option-desc">הנתונים יישמרו במכשיר בלבד, ללא שיתוף</p>
                     </div>
                 </div>
 
@@ -68,30 +80,36 @@
 
                 <!-- Tracker management section -->
                 <div class="tracker-mgmt-section">
-                    <div class="tracker-mgmt-title">שיתוף מעקב</div>
-                    <div class="tracker-mgmt-row">
-                        <span class="tracker-mgmt-label">קוד מעקב</span>
-                        <strong id="tracker-id-display" class="tracker-id-value"></strong>
+                    <div id="sharing-title" class="tracker-mgmt-title">שיתוף מעקב</div>
+                    <!-- API mode rows (hidden in local mode) -->
+                    <div id="sharing-rows">
+                        <div class="tracker-mgmt-row">
+                            <span class="tracker-mgmt-label">קוד מעקב</span>
+                            <strong id="tracker-id-display" class="tracker-id-value"></strong>
+                        </div>
+                        <div class="tracker-mgmt-row">
+                            <span class="tracker-mgmt-label">קישור הצטרפות</span>
+                            <button id="btn-invite" class="btn-mgmt">העתק</button>
+                        </div>
+                        <div id="invite-confirm" class="tracker-mgmt-confirm hidden">הקישור הועתק ללוח</div>
                     </div>
-                    <div class="tracker-mgmt-row">
-                        <span class="tracker-mgmt-label">קישור הצטרפות</span>
-                        <button id="btn-invite" class="btn-mgmt">העתק</button>
+                    <!-- Local mode row (hidden in API mode) -->
+                    <div id="local-mode-row" class="tracker-mgmt-row hidden">
+                        <span class="tracker-mgmt-label">הנתונים נשמרים במכשיר בלבד</span>
                     </div>
-                    <div id="invite-confirm" class="tracker-mgmt-confirm hidden">הקישור הועתק ללוח</div>
+                    <!-- Always shown: disconnect -->
                     <div class="tracker-mgmt-row tracker-mgmt-row--danger">
                         <span class="tracker-mgmt-label">נתק מעקב</span>
                         <button id="btn-leave-tracker" class="btn-mgmt btn-mgmt--danger">נתק</button>
                     </div>
-                    <div id="leave-warning" class="tracker-mgmt-warning hidden">
-                        לחיצה נוספת תנתק אותך מהמעקב. תצטרך את קוד המעקב כדי להצטרף שוב.
-                    </div>
+                    <div id="leave-warning" class="tracker-mgmt-warning hidden"></div>
                 </div>
 
                 <div class="manage-footer">
                     <button id="btn-finish-manage" class="btn-primary">חזור</button>
                 </div>
             </section>
-            <p id="app-credit" class="app-credit hidden">Alergenics v2.1.1 · Amir Eluk © 2026</p>
+            <p id="app-credit" class="app-credit hidden">Alergenics v2.1.2 · Amir Eluk © 2026</p>
         </main>
 
         <!-- Bottom Navigation -->
@@ -102,7 +120,8 @@
             </button>
         </nav>
     </div>
-    <script src="env.js"></script>
+    <!-- env.js overrides API_URL for local dev; not present on GitHub Pages (script.js falls back to prod URL) -->
+    <script>if(typeof ENV==='undefined')window.ENV={};</script>
     <script src="script.js"></script>
 </body>
 </html>
