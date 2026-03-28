@@ -1,5 +1,5 @@
 // --- API Layer ---
-const API_URL = (typeof ENV !== 'undefined' && ENV.API_URL) || 'http://localhost:7071';
+const API_URL = (typeof ENV !== 'undefined' && ENV.API_URL) || 'https://alergenics-api-dubnd2d7d2ahfwfy.israelcentral-01.azurewebsites.net';
 let currentTrackerId = localStorage.getItem('alergenics_tracker_id') || null;
 
 let apiCallCount = 0;
