@@ -22,16 +22,18 @@ Users track allergens from the Israel Ministry of Health list (plus custom entri
 ## Project Structure
 
 ```
-index.html                           # App shell with tracker landing, agenda, settings views
+index.html                           # App shell — landing, agenda, settings views
 script.js                            # All app logic, API calls via fetch()
 style.css                            # Styles
 env.js.example                       # Template — copy to env.js with your Azure Functions URL
 backend/                             # Azure Functions API
-  src/functions/trackers.js           # All endpoints — trackers CRUD, validation, rate limiting
-  host.json                          # Azure Functions host config
-  package.json                       # Dependencies
-  local.settings.json.example       # Template — copy to local.settings.json for local dev
-  .funcignore                        # Files excluded from deploy
+  src/functions/trackers.js          #   All endpoints — trackers CRUD, validation, rate limiting
+  host.json                          #   Azure Functions host config
+  package.json                       #   Dependencies
+  local.settings.json.example       #   Template — copy to local.settings.json for local dev
+tests/                               # Tests
+  app.spec.js                        #   Playwright E2E tests (mocked API)
+  api.test.js                        #   Live API integration tests (plain Node.js)
 ```
 
 ## Secrets Policy
@@ -63,7 +65,7 @@ Protection: rate limiting (5 creates/hr, 30 req/min), payload validation, 10KB s
 - [plan.md](plan.md) — development roadmap
 - [ui-plan.md](ui-plan.md) — UI layout
 - [shared-boards-requirements.md](shared-boards-requirements.md) — shared trackers requirements
-- [shared-boards-design.md](shared-boards-design.md) — architecture decision (Azure Functions + Cosmos DB chosen)
+- [shared-boards-design.md](shared-boards-design.md) — architecture decision record
 
 ## App Views
 

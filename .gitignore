@@ -1,10 +1,6 @@
 node_modules/
 test-results/
 playwright-report/
-.firebase/
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
 
 # Secrets — NEVER commit these
 .env
