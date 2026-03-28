@@ -9,5 +9,5 @@ ui-debug.log
 # Secrets — NEVER commit these
 .env
 backend/local.settings.json
-frontend/env.js
+env.js
 firebase-config.js

@@ -22,11 +22,10 @@ Users track allergens from the Israel Ministry of Health list (plus custom entri
 ## Project Structure
 
 ```
-frontend/                            # Static frontend (HTML/CSS/JS)
-  index.html                         # App shell with tracker landing, agenda, settings views
-  script.js                          # All app logic, API calls via fetch()
-  style.css                          # Styles
-  env.js.example                     # Template — copy to env.js with your Azure Functions URL
+index.html                           # App shell with tracker landing, agenda, settings views
+script.js                            # All app logic, API calls via fetch()
+style.css                            # Styles
+env.js.example                       # Template — copy to env.js with your Azure Functions URL
 backend/                             # Azure Functions API
   src/functions/trackers.js           # All endpoints — trackers CRUD, validation, rate limiting
   host.json                          # Azure Functions host config
@@ -39,7 +38,7 @@ backend/                             # Azure Functions API
 
 **No secrets are ever committed to git.** The `.gitignore` blocks:
 - `backend/local.settings.json` (local dev connection string)
-- `frontend/env.js` (API URL)
+- `env.js` (API URL)
 - Root `.env`
 
 In production: Managed Identity — no secrets at all. The Function App authenticates to Cosmos DB via Azure AD.

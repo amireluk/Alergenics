@@ -8,7 +8,7 @@ module.exports = defineConfig({
         headless: true,
     },
     webServer: {
-        command: 'npx serve frontend -p 3333 --no-clipboard',
+        command: 'npx serve . -p 3333 --no-clipboard',
         port: 3333,
         reuseExistingServer: true,
     },
