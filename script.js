@@ -59,10 +59,20 @@ const CREATURES = [
     'ג׳ירפה', 'זיקית', 'תנין', 'נחש', 'עטלף'
 ];
 
+function detectDevice() {
+    const ua = navigator.userAgent;
+    if (/android/i.test(ua)) return 'Android';
+    if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
+    if (/macintosh|mac os x/i.test(ua)) return 'Mac';
+    if (/windows/i.test(ua)) return 'Windows';
+    if (/linux/i.test(ua)) return 'Linux';
+    return 'Web';
+}
+
 function generateContributorName() {
     const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
     const mon = CREATURES[Math.floor(Math.random() * CREATURES.length)];
-    return `${mon} ${adj}`;
+    return `${mon} ${adj} (${detectDevice()})`;
 }
 
 function getOrCreateContributorId() {
@@ -78,6 +88,10 @@ function getOrCreateContributorName() {
     let name = localStorage.getItem('alergenics_contributor_name');
     if (!name) {
         name = generateContributorName();
+        localStorage.setItem('alergenics_contributor_name', name);
+    } else if (!/\(.+\)$/.test(name)) {
+        // Existing name without device suffix — append it now
+        name = `${name} (${detectDevice()})`;
         localStorage.setItem('alergenics_contributor_name', name);
     }
     return name;
@@ -410,13 +424,29 @@ function setupEventListeners() {
         }
     });
 
-    document.getElementById('btn-invite').addEventListener('click', () => {
+    document.getElementById('btn-invite').addEventListener('click', async () => {
         const url = `${location.origin}${location.pathname}?join=${currentTrackerId}`;
-        navigator.clipboard.writeText(url).then(() => {
-            const confirm = document.getElementById('invite-confirm');
-            confirm.classList.remove('hidden');
-            setTimeout(() => confirm.classList.add('hidden'), 2500);
-        });
+        const confirmEl = document.getElementById('invite-confirm');
+        const showConfirm = (msg) => {
+            confirmEl.textContent = msg;
+            confirmEl.classList.remove('hidden');
+            setTimeout(() => confirmEl.classList.add('hidden'), 2500);
+        };
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Alergenics', text: 'הצטרפו למעקב שלי', url });
+                return;
+            } catch (e) {
+                if (e.name === 'AbortError') return; // user cancelled — do nothing
+            }
+        }
+        // Fallback: clipboard
+        try {
+            await navigator.clipboard.writeText(url);
+            showConfirm('הקישור הועתק ללוח');
+        } catch {
+            showConfirm('העתק: ' + url);
+        }
     });
 
     document.getElementById('input-tracker-id').addEventListener('keydown', (e) => {
