@@ -148,9 +148,8 @@ const mohAllergens = [
 
 // Emoji Mapping
 const allergenMap = {
-    'בוטנים': '🥜', 'חלב': '🥛', 'ביצים': '🥚', 'ביצה': '🥚', 'חיטה': '🌾',
+    'חלב': '🥛', 'ביצים': '🥚', 'ביצה': '🥚', 'חיטה': '🌾',
     'גלוטן': '🌾', 'דגים': '🐟', 'דג': '🐟', 'סויה': '🫘',
-    'שומשום': '🥯', 'טחינה': '🥯',
     'סרטנים': '🦐', 'רכיכות': '🐚', 'סלרי': '🌿', 'חרדל': '🌭',
     'תורמוס': '🌸', 'גופרית': '🍷', 'אבק': '🧹', 'חתול': '🐈',
     'כלב': '🐕', 'תות': '🍓', 'תפוח': '🍎', 'דבש': '🍯'
@@ -585,7 +584,7 @@ function isSameDay(isoStr1, isoStr2) {
            d1.getDate() === d2.getDate();
 }
 
-// Icon mapping for nuts (replaces generic 🌰)
+// Icon mapping (replaces generic emojis with cropped images)
 const nutIconMap = {
     'אגוזי לוז': 'assets/icons/hazelnut.webp',
     'אגוזי מלך': 'assets/icons/walnut.webp',
@@ -593,7 +592,10 @@ const nutIconMap = {
     'אגוזי פקאן': 'assets/icons/pecan.webp',
     'פיסטוק': 'assets/icons/pistachio.webp',
     'שקדים': 'assets/icons/almond.webp',
-    'צנוברים': 'assets/icons/pine_nut.webp'
+    'צנוברים': 'assets/icons/pine_nut.webp',
+    'בוטנים': 'assets/icons/peanut.webp',
+    'שומשום': 'assets/icons/sesame.webp',
+    'טחינה': 'assets/icons/sesame.webp'
 };
 
 function getEmoji(name) {
