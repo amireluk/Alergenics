@@ -175,6 +175,8 @@ function showLanding() {
 
 async function enterTracker() {
     viewTrackerLanding.classList.add('hidden');
+    const loadingView = document.getElementById('view-loading');
+    loadingView.classList.remove('hidden');
     document.getElementById('tracker-id-display').textContent = currentTrackerId;
 
     // Load fresh data from server
@@ -186,6 +188,7 @@ async function enterTracker() {
         console.error('Failed to load tracker:', e);
     }
 
+    loadingView.classList.add('hidden');
     switchView('agenda', false);
     window.history.replaceState({ view: 'agenda' }, '');
     startPolling();
