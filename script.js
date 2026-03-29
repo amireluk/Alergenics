@@ -31,20 +31,104 @@ async function apiLoadTracker(trackerId) {
     } finally { apiEnd(); }
 }
 
-async function apiSaveTracker(trackerId, allergens) {
+async function apiSaveTracker(trackerId, allergens, contributors) {
     apiStart();
     try {
+        const payload = { allergens };
+        if (contributors !== undefined) payload.contributors = contributors;
         const res = await fetch(`${API_URL}/api/trackers/${trackerId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ allergens }),
+            body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error((await res.json()).error || 'Failed to save tracker');
     } finally { apiEnd(); }
 }
 
+// --- Contributor Identity ---
+const ADJECTIVES = [
+    'מפונק', 'חמוד', 'שובב', 'ענק', 'זעיר',
+    'מצחיק', 'עצלן', 'רעב', 'ישנוני', 'מתוק',
+    'מבולבל', 'נלהב', 'ביישן', 'פזיז', 'סקרן',
+    'רגוע', 'קופצני', 'משוגע', 'חייכן', 'מאושר'
+];
+const CREATURES = [
+    'דרקון', 'חד-קרן', 'פנדה', 'קוף', 'ינשוף',
+    'פינגווין', 'דוב', 'חתול', 'כלב', 'ארנב',
+    'תוכי', 'דולפין', 'כריש', 'נמר', 'פיל',
+    'ג׳ירפה', 'זיקית', 'תנין', 'נחש', 'עטלף'
+];
+
+function generateContributorName() {
+    const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+    const mon = CREATURES[Math.floor(Math.random() * CREATURES.length)];
+    return `${mon} ${adj}`;
+}
+
+function getOrCreateContributorId() {
+    let id = localStorage.getItem('alergenics_contributor_id');
+    if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem('alergenics_contributor_id', id);
+    }
+    return id;
+}
+
+function getOrCreateContributorName() {
+    let name = localStorage.getItem('alergenics_contributor_name');
+    if (!name) {
+        name = generateContributorName();
+        localStorage.setItem('alergenics_contributor_name', name);
+    }
+    return name;
+}
+
+function upsertContributor(contributors) {
+    const myId = getOrCreateContributorId();
+    let myName = getOrCreateContributorName();
+    const now = new Date().toISOString();
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+    const MAX_CONTRIBUTORS = 10;
+
+    // Drop stale (not seen in 30 days)
+    contributors = contributors.filter(c =>
+        new Date(c.lastSeen).getTime() > Date.now() - THIRTY_DAYS
+    );
+
+    // Name collision check (different id, same name)
+    const existing = contributors.find(c => c.id === myId);
+    if (!existing) {
+        const baseName = myName;
+        const taken = contributors.filter(c => c.id !== myId).map(c => c.name);
+        if (taken.includes(myName)) {
+            let suffix = 2;
+            while (taken.includes(`${baseName} ${suffix}`)) suffix++;
+            myName = `${baseName} ${suffix}`;
+            localStorage.setItem('alergenics_contributor_name', myName);
+        }
+    }
+
+    // Upsert
+    const idx = contributors.findIndex(c => c.id === myId);
+    if (idx !== -1) {
+        contributors[idx].lastSeen = now;
+        contributors[idx].name = myName;
+    } else {
+        contributors.push({ id: myId, name: myName, joinedAt: now, lastSeen: now });
+    }
+
+    // Cap at 10 — drop oldest by lastSeen
+    if (contributors.length > MAX_CONTRIBUTORS) {
+        contributors.sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+        contributors = contributors.slice(0, MAX_CONTRIBUTORS);
+    }
+
+    return contributors;
+}
+
 // --- State Management ---
 let tasks = [];
+let currentContributors = [];
 let sessionHistory = new Map();
 let debugDateOffset = parseInt(localStorage.getItem('alergenics_debug_offset') || '0');
 
@@ -145,6 +229,7 @@ function leaveTracker() {
     localStorage.removeItem('alergenics_local_mode');
     localStorage.removeItem('alergenics_local_tasks');
     tasks = [];
+    currentContributors = [];
     itemCadences = {};
     showLanding();
 }
@@ -166,6 +251,39 @@ function updateSharingSectionForMode() {
     document.getElementById('local-mode-row').classList.toggle('hidden', !localMode);
 }
 
+function renderContributors() {
+    const section = document.getElementById('contributors-section');
+    const list = document.getElementById('contributors-list');
+    if (localMode || currentContributors.length === 0) {
+        section.classList.add('hidden');
+        return;
+    }
+    section.classList.remove('hidden');
+    list.innerHTML = '';
+
+    const myId = getOrCreateContributorId();
+    const sorted = [...currentContributors].sort((a, b) => {
+        if (a.id === myId) return -1;
+        if (b.id === myId) return 1;
+        return new Date(a.joinedAt) - new Date(b.joinedAt);
+    });
+
+    const fmt = d => `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+
+    sorted.forEach(c => {
+        const isSelf = c.id === myId;
+        const row = document.createElement('div');
+        row.className = 'tracker-mgmt-row contributor-row';
+        row.innerHTML = `
+            <div class="contributor-info">
+                <span class="contributor-name">${c.name}${isSelf ? ' <span class="contributor-self">(את/ה)</span>' : ''}</span>
+                <span class="contributor-meta">הצטרף/ה ${fmt(new Date(c.joinedAt))} · נראה/ת ${fmt(new Date(c.lastSeen))}</span>
+            </div>
+        `;
+        list.appendChild(row);
+    });
+}
+
 function showLanding() {
     viewTrackerLanding.classList.remove('hidden');
     viewAgenda.classList.add('hidden');
@@ -184,6 +302,10 @@ async function enterTracker() {
         const data = await apiLoadTracker(currentTrackerId);
         tasks = data.allergens || [];
         tasks.forEach(t => { if (t.name) itemCadences[t.name] = t.freqValue || 3; });
+
+        // Upsert contributor and save back
+        currentContributors = upsertContributor(data.contributors || []);
+        await apiSaveTracker(currentTrackerId, tasks, currentContributors);
     } catch (e) {
         console.error('Failed to load tracker:', e);
     }
@@ -377,6 +499,7 @@ async function syncFromServer() {
         const data = await apiLoadTracker(currentTrackerId);
         tasks = data.allergens || [];
         tasks.forEach(t => { if (t.name) itemCadences[t.name] = t.freqValue || 3; });
+        currentContributors = data.contributors || [];
         render();
     } catch (e) {
         // silent — don't disrupt the user if sync fails
@@ -410,6 +533,7 @@ function switchView(target, pushToHistory) {
         bottomNav.classList.add('hidden');
         credit?.classList.remove('hidden');
         updateSharingSectionForMode();
+        renderContributors();
         renderMasterList();
         window.scrollTo({ top: 0, behavior: 'instant' });
     } else {
@@ -429,7 +553,7 @@ async function saveTasks() {
     }
     if (!currentTrackerId) return;
     try {
-        await apiSaveTracker(currentTrackerId, tasks);
+        await apiSaveTracker(currentTrackerId, tasks, currentContributors);
     } catch (e) {
         console.error('Failed to save to server:', e);
     }

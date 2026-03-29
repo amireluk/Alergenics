@@ -61,6 +61,16 @@ function validateTracker(data) {
             return 'nextDue must be an ISO date string';
         }
     }
+    if (data.contributors !== undefined) {
+        if (!Array.isArray(data.contributors)) return 'contributors must be an array';
+        if (data.contributors.length > 10) return 'Too many contributors (max 10)';
+        for (const c of data.contributors) {
+            if (typeof c.id !== 'string' || c.id.length > 50) return 'Invalid contributor id';
+            if (typeof c.name !== 'string' || c.name.length === 0 || c.name.length > 50) return 'Invalid contributor name';
+            if (typeof c.joinedAt !== 'string') return 'contributor joinedAt must be ISO string';
+            if (typeof c.lastSeen !== 'string') return 'contributor lastSeen must be ISO string';
+        }
+    }
     return null;
 }
 
@@ -154,7 +164,7 @@ app.http('getTracker', {
             }
             return {
                 headers: corsHeaders(),
-                jsonBody: { allergens: resource.allergens }
+                jsonBody: { allergens: resource.allergens, contributors: resource.contributors || [] }
             };
         } catch (err) {
             if (err.code === 404) {
@@ -232,6 +242,9 @@ app.http('updateTracker', {
             }
 
             resource.allergens = body.allergens;
+            if (body.contributors !== undefined) {
+                resource.contributors = body.contributors;
+            }
             resource.updatedAt = new Date().toISOString();
             await getContainer().item(trackerId, trackerId).replace(resource);
 

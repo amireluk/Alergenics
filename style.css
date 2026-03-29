@@ -604,6 +604,36 @@ button:disabled {
     font-weight: 400;
 }
 
+/* Contributors */
+.contributor-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+}
+
+.contributor-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.contributor-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.contributor-self {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--primary);
+}
+
+.contributor-meta {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
 .empty-msg {
     text-align: center;
     color: var(--text-light);
