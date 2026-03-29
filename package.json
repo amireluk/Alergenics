@@ -1,6 +1,6 @@
 {
   "name": "alergenics",
-  "version": "2.1.8",
+  "version": "2.1.9",
   "description": "Allergen exposure tracker — Hebrew, mobile-first",
   "private": true,
   "scripts": {

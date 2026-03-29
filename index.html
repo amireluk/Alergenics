@@ -16,7 +16,7 @@
         </div>
         <header>
             <h1>Alergenics</h1>
-            <p class="subtitle">מעקב אלרגנים יומי <span class="version-tag">v2.1.8</span></p>
+            <p class="subtitle">מעקב אלרגנים יומי <span class="version-tag">v2.1.9</span></p>
         </header>
 
         <main id="main-content">
@@ -73,18 +73,23 @@
                 </div>
             </section>
 
-            <!-- Track Management View -->
-            <section id="view-track" class="card hidden">
+            <!-- Allergens View -->
+            <section id="view-allergens" class="card hidden">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <h2 style="border-bottom: none; margin-bottom: 0; flex: 1;">ניהול מעקב</h2>
+                    <h2 style="border-bottom: none; margin-bottom: 0; flex: 1;">אלרגנים</h2>
                     <button id="btn-toggle-layout" class="btn-layout-toggle" title="החלף תצוגה">☰</button>
                 </div>
-                <div class="tracker-mgmt-section" style="margin-bottom: 1rem;">
-                    <div class="tracker-mgmt-title">אלרגנים למעקב</div>
-                    <div style="padding: 0.75rem 1rem 0.25rem;">
-                        <div id="master-list-container" class="allergen-rows"></div>
-                    </div>
+                <div style="padding: 0.25rem 0 0.5rem;">
+                    <div id="master-list-container" class="allergen-rows"></div>
                 </div>
+                <div class="manage-footer">
+                    <button id="btn-finish-allergens" class="btn-primary">חזור</button>
+                </div>
+            </section>
+
+            <!-- Track Management View -->
+            <section id="view-track" class="card hidden">
+                <h2>הגדרות</h2>
 
                 <!-- Tracker management section -->
                 <div class="tracker-mgmt-section">
@@ -123,11 +128,15 @@
                     <button id="btn-finish-manage" class="btn-primary">חזור</button>
                 </div>
             </section>
-            <p id="app-credit" class="app-credit hidden">Alergenics v2.1.8 · Amir Eluk © 2026</p>
+            <p id="app-credit" class="app-credit hidden">Alergenics v2.1.9 · Amir Eluk © 2026</p>
         </main>
 
         <!-- Bottom Navigation -->
         <nav id="bottom-nav" class="bottom-nav hidden">
+            <button id="btn-open-allergens" class="nav-item">
+                <span class="nav-icon">🥜</span>
+                <span class="nav-label">אלרגנים</span>
+            </button>
             <button id="btn-open-settings" class="nav-item">
                 <span class="nav-icon">⚙️</span>
                 <span class="nav-label">הגדרות</span>
