@@ -162,7 +162,6 @@ let allergenLayoutMode = 'rows'; // 'grid' | 'rows'
 const pendingList = document.getElementById('pending-list');
 const viewAgenda = document.getElementById('view-agenda');
 const viewTrack = document.getElementById('view-track');
-const viewAllergens = document.getElementById('view-allergens');
 const viewTrackerLanding = document.getElementById('view-tracker-landing');
 const masterListContainer = document.getElementById('master-list-container');
 const btnFinishManage = document.getElementById('btn-finish-manage');
@@ -288,9 +287,9 @@ function showLanding() {
     viewTrackerLanding.classList.remove('hidden');
     viewAgenda.classList.add('hidden');
     viewTrack.classList.add('hidden');
-    viewAllergens.classList.add('hidden');
     document.getElementById('view-loading').classList.add('hidden');
     bottomNav.classList.add('hidden');
+    setLandingBusy(false);
 }
 
 async function enterTracker() {
@@ -424,10 +423,8 @@ function setupEventListeners() {
         if (e.key === 'Enter') joinTracker();
     });
 
-    document.getElementById('btn-open-allergens').addEventListener('click', () => switchView('allergens', true));
     btnOpenSettings.addEventListener('click', () => switchView('track', true));
     btnFinishManage.addEventListener('click', () => switchView('agenda', true));
-    document.getElementById('btn-finish-allergens').addEventListener('click', () => switchView('agenda', true));
 
     document.getElementById('btn-toggle-layout').addEventListener('click', () => {
         allergenLayoutMode = allergenLayoutMode === 'grid' ? 'rows' : 'grid';
@@ -531,27 +528,20 @@ function switchView(target, pushToHistory) {
         if (btn) { btn.disabled = false; btn.classList.remove('armed'); }
     }
     const credit = document.getElementById('app-credit');
-    // Hide all views first
-    viewAgenda.classList.add('hidden');
-    viewTrack.classList.add('hidden');
-    viewAllergens.classList.add('hidden');
-    bottomNav.classList.add('hidden');
-    credit?.classList.add('hidden');
-
     if (target === 'track') {
+        viewAgenda.classList.add('hidden');
         viewTrack.classList.remove('hidden');
+        bottomNav.classList.add('hidden');
         credit?.classList.remove('hidden');
         updateSharingSectionForMode();
         renderContributors();
-        window.scrollTo({ top: 0, behavior: 'instant' });
-    } else if (target === 'allergens') {
-        viewAllergens.classList.remove('hidden');
-        bottomNav.classList.remove('hidden');
         renderMasterList();
         window.scrollTo({ top: 0, behavior: 'instant' });
     } else {
+        viewTrack.classList.add('hidden');
         viewAgenda.classList.remove('hidden');
         bottomNav.classList.remove('hidden');
+        credit?.classList.add('hidden');
         render();
     }
 }
