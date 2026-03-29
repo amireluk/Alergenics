@@ -623,7 +623,7 @@ function renderMasterList() {
                 <span class="emoji" style="font-size: 1.5rem;">${getEmoji(name)}</span>
                 <span class="name" style="font-size: 0.9rem; font-weight: 600;">${name}</span>
             </div>
-            <div class="cadence-ctrl">
+            <div class="cadence-ctrl" style="visibility: ${isTracked ? 'visible' : 'hidden'};">
                 <button class="btn-qty minus">-</button>
                 <div style="display: flex; flex-direction: column; align-items: center;">
                     <span class="cadence-val">${itemCadences[name]}</span>
