@@ -11,7 +11,7 @@ Users track allergens from the Israel Ministry of Health list (plus custom entri
 - **Never `git push` without explicit user approval for that specific push.**
 - **Never deploy to Azure Functions (`func azure functionapp publish`) without explicit user approval.**
 - Always show what will be pushed/deployed and wait for a clear "go ahead" before executing.
-- **Every push must include at least a hotfix version bump** (e.g. v2.1.1 → v2.1.2) in `index.html` (version-tag span) and the copyright line, and `package.json`.
+- **Every commit must include a patch version bump** — automated via pre-commit hook (see Setup below).
 
 ## Open TODOs
 
@@ -80,6 +80,16 @@ Three views (bottom-nav driven, no routing library):
 1. **Tracker Landing** — Create tracker / Join with tracker ID
 2. **מה אוכלים היום?** — Agenda (Today / Tomorrow / Future sections)
 3. **הגדרות** — Settings (allergen grid, per-item cadence controls)
+
+## Setup
+
+After cloning, install git hooks:
+
+```bash
+./scripts/setup-hooks.sh
+```
+
+This installs a pre-commit hook that auto-bumps the patch version in `package.json` and `index.html` on every commit. If you manually bump the version before committing, the hook detects it and skips.
 
 ## Testing
 
