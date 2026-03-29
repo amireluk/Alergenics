@@ -7,3 +7,6 @@ playwright-report/
 backend/local.settings.json
 env.js
 firebase-config.js
+
+# Original reference images
+assets/original/

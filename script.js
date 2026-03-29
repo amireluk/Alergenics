@@ -65,9 +65,8 @@ const mohAllergens = [
 // Emoji Mapping
 const allergenMap = {
     'בוטנים': '🥜', 'חלב': '🥛', 'ביצים': '🥚', 'ביצה': '🥚', 'חיטה': '🌾',
-    'גלוטן': '🌾', 'דגים': '🐟', 'דג': '🐟', 'סויה': '🫘', 'אגוזי לוז': '🌰',
-    'אגוזי מלך': '🌰', 'אגוזי קשיו': '🌰', 'אגוזי פקאן': '🌰', 'פיסטוק': '🌰',
-    'שקדים': '🌰', 'צנוברים': '🌲', 'שומשום': '🥯', 'טחינה': '🥯',
+    'גלוטן': '🌾', 'דגים': '🐟', 'דג': '🐟', 'סויה': '🫘',
+    'שומשום': '🥯', 'טחינה': '🥯',
     'סרטנים': '🦐', 'רכיכות': '🐚', 'סלרי': '🌿', 'חרדל': '🌭',
     'תורמוס': '🌸', 'גופרית': '🍷', 'אבק': '🧹', 'חתול': '🐈',
     'כלב': '🐕', 'תות': '🍓', 'תפוח': '🍎', 'דבש': '🍯'
@@ -459,8 +458,23 @@ function isSameDay(isoStr1, isoStr2) {
            d1.getDate() === d2.getDate();
 }
 
+// Icon mapping for nuts (replaces generic 🌰)
+const nutIconMap = {
+    'אגוזי לוז': 'assets/icons/hazelnut.webp',
+    'אגוזי מלך': 'assets/icons/walnut.webp',
+    'אגוזי קשיו': 'assets/icons/cashew.webp',
+    'אגוזי פקאן': 'assets/icons/pecan.webp',
+    'פיסטוק': 'assets/icons/pistachio.webp',
+    'שקדים': 'assets/icons/almond.webp',
+    'צנוברים': 'assets/icons/pine_nut.webp'
+};
+
 function getEmoji(name) {
-    return allergenMap[name.trim()] || '🍴';
+    const key = name.trim();
+    if (nutIconMap[key]) {
+        return `<img src="${nutIconMap[key]}" alt="${key}" style="height:1.4em;vertical-align:middle;">`;
+    }
+    return allergenMap[key] || '🍴';
 }
 
 function renderMasterList() {
