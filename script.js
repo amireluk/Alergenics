@@ -794,13 +794,13 @@ function render() {
         doneTitleDiv.innerHTML = `בוצע (${doneItems.length}) <span class="done-toggle-arrow">${doneSectionOpen ? '▴' : '▾'}</span>`;
         doneTitleDiv.addEventListener('click', () => {
             doneSectionOpen = !doneSectionOpen;
-            render();
+            doneItemsList.classList.toggle('collapsed', !doneSectionOpen);
+            doneTitleDiv.querySelector('.done-toggle-arrow').textContent = doneSectionOpen ? '▴' : '▾';
         });
         doneSectionContainer.appendChild(doneTitleDiv);
 
         const doneItemsList = document.createElement('div');
-        doneItemsList.className = 'section-items';
-        if (!doneSectionOpen) doneItemsList.style.display = 'none';
+        doneItemsList.className = `section-items done-items-list${doneSectionOpen ? '' : ' collapsed'}`;
 
         const fmtDoneDate = (isoStr) => {
             const d = new Date(isoStr);
@@ -949,16 +949,17 @@ function handleDrop(id, targetGroupId) {
 window.markAsDone = function(id) {
     const index = tasks.findIndex(t => t.id === id);
     if (index !== -1) {
-        // Preserve history as-is (including undefined) so undo restores exact original state
+        // Preserve exact pre-mark state (including undefined fields) for clean undo
         const historySnapshot = Array.isArray(tasks[index].history) ? [...tasks[index].history] : tasks[index].history;
         sessionHistory.set(id, { ...tasks[index], history: historySnapshot });
         const today = getNow();
-        // Only push previous lastDone into history if history array already exists
-        // (avoids surfacing legacy lastDone values on first use of the new system)
-        if (tasks[index].lastDone && Array.isArray(tasks[index].history)) {
-            tasks[index].history = [{ doneAt: tasks[index].lastDone }, ...tasks[index].history].slice(0, 2);
+        // Only push previous lastDone into history after the first new-system marking
+        // historyTracked flag is set on first mark, so legacy lastDone values are never surfaced
+        if (tasks[index].lastDone && tasks[index].historyTracked) {
+            tasks[index].history = [{ doneAt: tasks[index].lastDone }, ...(tasks[index].history || [])].slice(0, 2);
         }
         tasks[index].history = tasks[index].history || [];
+        tasks[index].historyTracked = true;
         tasks[index].lastDone = today.toISOString();
         tasks[index].nextDue = calculateNextDue(today.toISOString(), tasks[index].freqValue);
         saveTasks();
