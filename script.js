@@ -949,7 +949,9 @@ function handleDrop(id, targetGroupId) {
 window.markAsDone = function(id) {
     const index = tasks.findIndex(t => t.id === id);
     if (index !== -1) {
-        sessionHistory.set(id, { ...tasks[index], history: [...(tasks[index].history || [])] });
+        // Preserve history as-is (including undefined) so undo restores exact original state
+        const historySnapshot = Array.isArray(tasks[index].history) ? [...tasks[index].history] : tasks[index].history;
+        sessionHistory.set(id, { ...tasks[index], history: historySnapshot });
         const today = getNow();
         // Only push previous lastDone into history if history array already exists
         // (avoids surfacing legacy lastDone values on first use of the new system)
