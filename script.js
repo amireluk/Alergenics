@@ -760,8 +760,8 @@ function render() {
             nextOccurrenceDiff = parseInt(task.freqValue);
         }
 
-        if (diff === 1 || (diff <= 0 && !isDoneToday && parseInt(task.freqValue) === 1)) {
-            groups[1].items.push({ task, isPreview: (diff !== 1) });
+        if (diff === 1) {
+            groups[1].items.push({ task, isPreview: false });
         }
 
         let laterProjectedDiff = diff;
@@ -772,6 +772,69 @@ function render() {
         }
         groups[2].items.push({ task, isPreview: true, customDiff: laterProjectedDiff });
     });
+
+    // --- Done / History section (rendered first, prepended) ---
+    const doneItems = [];
+    stableTasks.forEach(task => {
+        if (isSameDay(task.lastDone, todayISO)) {
+            doneItems.push({ task, doneAt: task.lastDone, isToday: true });
+        }
+        (task.history || []).forEach(entry => {
+            doneItems.push({ task, doneAt: entry.doneAt, isToday: false });
+        });
+    });
+    doneItems.sort((a, b) => new Date(b.doneAt) - new Date(a.doneAt));
+
+    if (doneItems.length > 0) {
+        const doneSectionContainer = document.createElement('div');
+        doneSectionContainer.className = 'agenda-section';
+
+        const doneTitleDiv = document.createElement('div');
+        doneTitleDiv.className = 'agenda-section-title agenda-section-collapsible';
+        doneTitleDiv.innerHTML = `בוצע (${doneItems.length}) <span class="done-toggle-arrow">${doneSectionOpen ? '▴' : '▾'}</span>`;
+        doneTitleDiv.addEventListener('click', () => {
+            doneSectionOpen = !doneSectionOpen;
+            render();
+        });
+        doneSectionContainer.appendChild(doneTitleDiv);
+
+        const doneItemsList = document.createElement('div');
+        doneItemsList.className = 'section-items';
+        if (!doneSectionOpen) doneItemsList.style.display = 'none';
+
+        const fmtDoneDate = (isoStr) => {
+            const d = new Date(isoStr);
+            if (isSameDay(isoStr, todayISO)) return 'היום';
+            const yesterday = new Date(getNow());
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (d.getFullYear() === yesterday.getFullYear() && d.getMonth() === yesterday.getMonth() && d.getDate() === yesterday.getDate()) return 'אתמול';
+            return `${d.getDate()}.${d.getMonth() + 1}`;
+        };
+
+        doneItems.forEach(({ task, doneAt, isToday }) => {
+            const card = document.createElement('div');
+            card.className = 'action-card done-card';
+            if (isToday) {
+                card.classList.add('clickable');
+                card.onclick = () => undoItem(task.id);
+            } else {
+                card.classList.add('non-interactive');
+            }
+            card.innerHTML = `
+                <div class="action-info" style="width: 100%;">
+                    <h3 style="display:flex; align-items:center; margin:0; gap: 10px;">
+                        <span class="done-check">✓</span>
+                        <span>${task.name} ${getEmoji(task.name)}</span>
+                    </h3>
+                    <p class="status-ok" style="margin:0; font-size:0.85rem;">${fmtDoneDate(doneAt)}${isToday ? ' · לחץ לביטול' : ''}</p>
+                </div>
+            `;
+            doneItemsList.appendChild(card);
+        });
+
+        doneSectionContainer.appendChild(doneItemsList);
+        pendingList.appendChild(doneSectionContainer);
+    }
 
     groups.forEach(group => {
         const sectionContainer = document.createElement('div');
@@ -862,71 +925,6 @@ function render() {
         pendingList.appendChild(sectionContainer);
     });
 
-    // --- Done / History section ---
-    const doneItems = [];
-    stableTasks.forEach(task => {
-        if (isSameDay(task.lastDone, todayISO)) {
-            doneItems.push({ task, doneAt: task.lastDone, isToday: true });
-        }
-        (task.history || []).forEach(entry => {
-            doneItems.push({ task, doneAt: entry.doneAt, isToday: false });
-        });
-    });
-    doneItems.sort((a, b) => new Date(b.doneAt) - new Date(a.doneAt));
-
-    if (doneItems.length === 0) return;
-
-    const doneSectionContainer = document.createElement('div');
-    doneSectionContainer.className = 'agenda-section';
-
-    const doneTitleDiv = document.createElement('div');
-    doneTitleDiv.className = 'agenda-section-title agenda-section-collapsible';
-    doneTitleDiv.innerHTML = `בוצע (${doneItems.length}) <span class="done-toggle-arrow">${doneSectionOpen ? '▴' : '▾'}</span>`;
-    doneTitleDiv.addEventListener('click', () => {
-        doneSectionOpen = !doneSectionOpen;
-        render();
-    });
-    doneSectionContainer.appendChild(doneTitleDiv);
-
-    const doneItemsList = document.createElement('div');
-    doneItemsList.className = 'section-items';
-    if (!doneSectionOpen) {
-        doneItemsList.style.display = 'none';
-    }
-
-    const fmtDoneDate = (isoStr) => {
-        const d = new Date(isoStr);
-        const today = getNow();
-        if (isSameDay(isoStr, todayISO)) return 'היום';
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-        if (d.getFullYear() === yesterday.getFullYear() && d.getMonth() === yesterday.getMonth() && d.getDate() === yesterday.getDate()) return 'אתמול';
-        return `${d.getDate()}.${d.getMonth() + 1}`;
-    };
-
-    doneItems.forEach(({ task, doneAt, isToday }) => {
-        const card = document.createElement('div');
-        card.className = 'action-card done-card';
-        if (isToday) {
-            card.classList.add('clickable');
-            card.onclick = () => undoItem(task.id);
-        } else {
-            card.classList.add('non-interactive');
-        }
-        card.innerHTML = `
-            <div class="action-info" style="width: 100%;">
-                <h3 style="display:flex; align-items:center; margin:0; gap: 10px;">
-                    <span class="done-check">✓</span>
-                    <span>${task.name} ${getEmoji(task.name)}</span>
-                </h3>
-                <p class="status-ok" style="margin:0; font-size:0.85rem;">${fmtDoneDate(doneAt)}${isToday ? ' · לחץ לביטול' : ''}</p>
-            </div>
-        `;
-        doneItemsList.appendChild(card);
-    });
-
-    doneSectionContainer.appendChild(doneItemsList);
-    pendingList.appendChild(doneSectionContainer);
 }
 
 function handleDrop(id, targetGroupId) {
@@ -953,14 +951,16 @@ window.markAsDone = function(id) {
     if (index !== -1) {
         sessionHistory.set(id, { ...tasks[index], history: [...(tasks[index].history || [])] });
         const today = getNow();
-        // Push previous lastDone into history (max 2 entries)
-        if (tasks[index].lastDone) {
-            tasks[index].history = [{ doneAt: tasks[index].lastDone }, ...(tasks[index].history || [])].slice(0, 2);
+        // Only push previous lastDone into history if history array already exists
+        // (avoids surfacing legacy lastDone values on first use of the new system)
+        if (tasks[index].lastDone && Array.isArray(tasks[index].history)) {
+            tasks[index].history = [{ doneAt: tasks[index].lastDone }, ...tasks[index].history].slice(0, 2);
         }
+        tasks[index].history = tasks[index].history || [];
         tasks[index].lastDone = today.toISOString();
         tasks[index].nextDue = calculateNextDue(today.toISOString(), tasks[index].freqValue);
         saveTasks();
-        render();
+        setTimeout(render, 200);
     }
 };
 
@@ -985,5 +985,5 @@ window.undoItem = function(id) {
         }
     }
     saveTasks();
-    render();
+    setTimeout(render, 200);
 };
